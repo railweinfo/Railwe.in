@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NDA Register — Admin</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root{
+    --ink:#161c26;
+    --paper:#f6f3ea;
+    --rule:#e2ddcf;
+    --brass:#c9a44c;
+    --navy-deep:#0d1420;
+    --good:#2f8f5b;
+    --danger:#b3392c;
+    --serif: Georgia, 'Times New Roman', serif;
+    --mono: 'Courier New', monospace;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---- Sign-in gate ---- */
+  .auth-gate{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--navy-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .auth-gate-box{
+    max-width: 380px;
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    padding: 36px 28px 30px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  .auth-gate-mark{
+    width: 52px; height: 52px;
+    margin: 0 auto 18px;
+    background: var(--brass);
+    color: var(--navy-deep);
+    border-radius: 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: var(--serif);
+    font-weight:700;
+    font-size: 24px;
+  }
+  .auth-gate-box h1{
+    font-family: var(--serif);
+    font-size: 19px;
+    margin: 0 0 12px;
+  }
+  .auth-gate-box p{
+    font-size: 13.5px;
+    line-height:1.55;
+    color: #43506a;
+    margin: 0 0 20px;
+  }
+  .auth-btn-google{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:100%;
+    padding: 11px 16px;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight:600;
+    color: var(--ink);
+    cursor:pointer;
+  }
+  .auth-btn-google:hover{ background: #faf8f2; }
+  .auth-btn-google svg{ width:18px; height:18px; flex-shrink:0; }
+  .auth-btn-signout{
+    width:100%;
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color: var(--danger);
+    cursor:pointer;
+    margin-top: 14px;
+  }
+  .auth-btn-signout:hover{ background: #fbeeec; }
+  .gate-error{
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--danger);
+    background: #fbeeec;
+    border: 1px solid #e6b8ae;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin: 14px 0 0;
+    line-height:1.5;
+    text-align: left;
+    display:none;
+  }
+  .gate-error.show{ display:block; }
+  .gate-loading{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #8fa3ba;
+    margin: 16px 0 0;
+    display:none;
+  }
+  .auth-gate.checking .auth-btn-google,
+  .auth-gate.checking .auth-btn-signout{ display:none; }
+  .auth-gate.checking .gate-loading{ display:block; }
+  body.admin-unlocked .auth-gate{ display:none; }
+  body:not(.admin-unlocked) .admin-wrap{ display:none; }
+
+  /* ---- Admin page ---- */
+  .admin-wrap{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 18px 60px;
+  }
+  .admin-topbar{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .admin-topbar h1{
+    font-family: var(--serif);
+    font-size: 19px;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .admin-topbar .crown{ font-size: 20px; }
+  .btn-signout-small{
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--danger);
+    cursor:pointer;
+  }
+
+  .card{
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 18px 18px 16px;
+    margin-bottom: 18px;
+  }
+  .card h2{
+    font-family: var(--serif);
+    font-size: 15px;
+    margin: 0 0 6px;
+  }
+  .card .hint{
+    font-size: 12px;
+    color: #5c6b82;
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+  textarea#blockedMessage{
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 13.5px;
+    padding: 10px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ink);
+    resize: vertical;
+    margin-bottom: 10px;
+  }
+  .btn-save{
+    padding: 8px 16px;
+    background: var(--navy-deep);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+  }
+  .btn-save:hover{ opacity: 0.9; }
+  .save-status{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--good);
+    margin-left: 10px;
+  }
+
+  .filter-row{
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .filter-btn{
+    padding: 5px 12px;
+    border: 1px solid var(--rule);
+    background: #fff;
+    border-radius: 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: #5c6b82;
+    cursor: pointer;
+  }
+  .filter-btn.active{
+    background: var(--navy-deep);
+    color: #fff;
+    border-color: var(--navy-deep);
+  }
+  .loading-msg{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #8fa3ba;
+    text-align: center;
+    padding: 20px 0;
+  }
+  .user-card{
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .user-card:last-child{ border-bottom: none; }
+  .user-top{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .user-email{
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    word-break: break-all;
+  }
+  .user-sub{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: #8fa3ba;
+    margin-top: 2px;
+  }
+  .status-badge{
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .status-badge.trial{ background: #fdf1d6; color: #8a6d1e; }
+  .status-badge.blocked{ background: #fbeeec; color: var(--danger); }
+  .status-badge.paid{ background: #e3f3e9; color: #1f7a44; }
+  .user-actions{
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .action-btn{
+    padding: 5px 11px;
+    border: 1px solid var(--rule);
+    background: #fff;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .action-btn:disabled{ opacity: 0.4; cursor: default; }
+  .action-btn.approve{ color: #1f7a44; border-color: #b7e0c7; }
+  .action-btn.block{ color: var(--danger); border-color: #e6b8ae; }
+  .action-btn.extend{ color: #8a6d1e; border-color: #f0dca0; }
+</style>
+</head>
+<body>
+
+<div id="authGate" class="auth-gate">
+  <div class="auth-gate-box">
+    <div class="auth-gate-mark">N</div>
+    <h1>NDA Register — Admin</h1>
+    <div id="gateSignedOut">
+      <p>Sign in with the admin Google account to manage users.</p>
+      <button class="auth-btn-google" id="gateGoogleSignInBtn" type="button">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 7 29.6 5 24 5c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.6 35.4 27 36.3 24 36.3c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.5l6.6 5.4C41.6 35.7 44 30.3 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+        Sign in with Google
+      </button>
+      <div class="gate-error" id="gateError"></div>
+    </div>
+    <div id="gateDenied" style="display:none;">
+      <p id="deniedMessage">This Google account doesn't have admin access.</p>
+      <button class="auth-btn-signout" id="gateSignOutBtn" type="button">Sign out</button>
+    </div>
+    <p class="gate-loading" id="gateLoading">Checking sign-in status&hellip;</p>
+  </div>
+</div>
+
+<div class="admin-wrap">
+  <div class="admin-topbar">
+    <h1><span class="crown">&#128081;</span> Admin panel</h1>
+    <button class="btn-signout-small" id="topSignOutBtn" type="button">Sign out</button>
+  </div>
+
+  <div class="card">
+    <h2>Message for blocked / trial-ended users</h2>
+    <p class="hint">Shown on the main app to anyone whose account is blocked or whose trial has ended.</p>
+    <textarea id="blockedMessage" rows="3" placeholder="Your 30-day trial has ended. Please contact the administrator to continue using this app."></textarea>
+    <button class="btn-save" id="saveMessageBtn" type="button">Save message</button>
+    <span class="save-status" id="messageSaveStatus"></span>
+  </div>
+
+  <div class="card">
+    <h2>Users</h2>
+    <p class="hint">When someone pays the ₹49 lifetime fee, their email is pre-filled in the UPI payment note — check your UPI app or bank statement for that email, find them below, and tap "Make permanent."</p>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all" type="button">All</button>
+      <button class="filter-btn" data-filter="trial" type="button">Trial</button>
+      <button class="filter-btn" data-filter="blocked" type="button">Blocked</button>
+      <button class="filter-btn" data-filter="paid" type="button">Paid</button>
+    </div>
+    <div id="userList">
+      <p class="loading-msg">Loading users&hellip;</p>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/admin-init.js"></script>
+</body>
+</html>
