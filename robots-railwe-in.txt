@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://railwe.in/sitemap.xml
