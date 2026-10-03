@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us — NDA Register</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1e30">
+<style>
+  :root{
+    --ink:#161c26;
+    --paper:#f6f3ea;
+    --paper-2:#ece7d8;
+    --rule:#d8d0ba;
+    --navy:#1e3a5f;
+    --navy-2:#152a45;
+    --navy-deep:#0f1e30;
+    --brass:#9c7a2e;
+    --brass-soft:#f1e6c8;
+    --good:#1c6e43;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: var(--serif);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---- Top bar (same letterhead style as the main app) ---- */
+  .topbar{
+    background: var(--navy-deep);
+    padding: 18px 24px 16px;
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    border-bottom: 3px solid var(--brass);
+  }
+  .topbar-app-mark{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .mark-glyph{
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--brass);
+    color: var(--brass);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 20px;
+    border-radius: 3px;
+  }
+  .mark-text{ display:flex; flex-direction:column; line-height:1.1; }
+  .mark-text .t1{
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(241,230,200,0.6);
+  }
+  .mark-text .t2{
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* ---- Left sidebar menu ---- */
+  .hamburger-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3);
+    background: transparent;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 4px;
+    cursor:pointer;
+    flex-shrink:0;
+    padding: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .hamburger-btn:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .hamburger-btn span{
+    display:block;
+    width: 16px;
+    height: 2px;
+    background: var(--brass-soft);
+    border-radius: 1px;
+  }
+  .sidebar-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(8,14,22,0.55);
+    z-index: 900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .sidebar-overlay.open{ opacity: 1; pointer-events: auto; }
+  .sidebar{
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 270px;
+    max-width: 82vw;
+    background: var(--navy-deep);
+    border-right: 3px solid var(--brass);
+    z-index: 901;
+    display:flex;
+    flex-direction:column;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.35);
+  }
+  .sidebar.open{ transform: translateX(0); }
+  .sidebar-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 18px 18px 16px;
+    border-bottom: 1px solid rgba(241,230,200,0.15);
+  }
+  .sidebar-close{
+    width: 32px; height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3);
+    background: transparent;
+    color: var(--brass-soft);
+    font-size: 22px;
+    line-height: 1;
+    cursor:pointer;
+  }
+  .sidebar-close:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .sidebar-links{
+    flex: 1;
+    padding: 14px 10px;
+    overflow-y: auto;
+  }
+  .sidebar-link{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    padding: 13px 14px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    color: var(--brass-soft);
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-link:hover{ background: rgba(241,230,200,0.08); border-left-color: var(--brass); }
+  .sidebar-link.active{ background: rgba(241,230,200,0.12); border-left-color: var(--brass); }
+  .sidebar-link-icon{ font-size: 17px; width: 22px; text-align:center; }
+  .sidebar-link-toggle{
+    width: 100%;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--serif);
+  }
+  .sidebar-link-toggle .sidebar-link-caret{
+    margin-left: auto;
+    font-size: 11px;
+    transition: transform 0.18s ease;
+  }
+  .sidebar-link-toggle.open .sidebar-link-caret{ transform: rotate(180deg); }
+  .sidebar-submenu{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+  }
+  .sidebar-submenu.open{ max-height: 200px; }
+  .sidebar-sublink{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 11px 14px 11px 44px;
+    color: rgba(241,230,200,0.85);
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-sublink:hover{ background: rgba(241,230,200,0.06); border-left-color: var(--brass); }
+  .sidebar-footer{
+    padding: 14px 18px;
+    border-top: 1px solid rgba(241,230,200,0.15);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(241,230,200,0.55);
+  }
+
+  /* ---- Page content ---- */
+  .page-wrap{
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 34px 20px 60px;
+  }
+  .back-link{
+    display: inline-block;
+    margin-bottom: 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: #6b7891;
+    text-decoration: none;
+  }
+  .back-link:hover{ color: var(--ink); text-decoration: underline; }
+  h1{
+    font-family: var(--serif);
+    font-size: 24px;
+    text-align: center;
+    margin: 0 0 6px;
+  }
+  .subtitle{
+    text-align: center;
+    font-size: 13.5px;
+    color: #5c6b82;
+    margin: 0 0 28px;
+    line-height: 1.55;
+  }
+  .card{
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--brass);
+    border-radius: 4px;
+    padding: 24px 20px 22px;
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .company-name{
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .company-tag{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a7a55;
+    margin: 0 0 22px;
+  }
+  .contact-list{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .contact-row{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--paper);
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .contact-row:hover{ background: var(--paper-2); border-color: var(--brass); }
+  .contact-icon{
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 18px;
+  }
+  .contact-icon.email{ background: #e3ecfa; }
+  .contact-icon.whatsapp{ background: #dff5e6; }
+  .contact-text{ text-align: left; flex: 1; min-width: 0; }
+  .contact-label{
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a7a55;
+    margin-bottom: 2px;
+  }
+  .contact-value{
+    font-size: 15px;
+    font-weight: 600;
+    word-break: break-word;
+  }
+  .contact-arrow{
+    flex-shrink: 0;
+    color: var(--brass);
+    font-size: 20px;
+  }
+  .hint{
+    text-align: center;
+    font-size: 12.5px;
+    color: #6b7891;
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar" aria-label="Main menu">
+  <div class="sidebar-header">
+    <div class="topbar-app-mark">
+      <span class="mark-glyph">N</span>
+      <span class="mark-text">
+        <span class="t1">Register</span>
+        <span class="t2">NDA</span>
+      </span>
+    </div>
+    <button class="sidebar-close" id="sidebarCloseBtn" type="button" aria-label="Close menu">&times;</button>
+  </div>
+  <div class="sidebar-links">
+    <a class="sidebar-link" href="./index.html">
+      <span class="sidebar-link-icon">&#127968;</span> Home
+    </a>
+    <a class="sidebar-link active" href="./contact.html">
+      <span class="sidebar-link-icon">&#9993;&#65039;</span> Contact Us
+    </a>
+    <button class="sidebar-link sidebar-link-toggle" id="clerkServicesToggle" type="button" aria-expanded="false">
+      <span class="sidebar-link-icon">&#128196;</span> Clerk's Services
+      <span class="sidebar-link-caret">&#9662;</span>
+    </button>
+    <div class="sidebar-submenu" id="clerkServicesMenu">
+      <a class="sidebar-sublink" href="./show-salary.html">Show Salary</a>
+    </div>
+  </div>
+  <div class="sidebar-footer">Neha Infotech</div>
+</nav>
+
+<header class="topbar">
+  <button class="hamburger-btn" id="sidebarOpenBtn" type="button" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-app-mark">
+    <span class="mark-glyph">N</span>
+    <span class="mark-text">
+      <span class="t1">Register</span>
+      <span class="t2">NDA</span>
+    </span>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <a class="back-link" href="./index.html">&larr; Back to app</a>
+  <h1>Contact Us</h1>
+  <p class="subtitle">Questions, support, or activation help — reach out any time.</p>
+
+  <div class="card">
+    <div class="company-name">Neha Infotech</div>
+    <div class="company-tag">NDA Register App</div>
+
+    <div class="contact-list">
+      <a class="contact-row" href="mailto:railwe.info@gmail.com">
+        <span class="contact-icon email">&#9993;&#65039;</span>
+        <span class="contact-text">
+          <div class="contact-label">Email</div>
+          <div class="contact-value">railwe.info@gmail.com</div>
+        </span>
+        <span class="contact-arrow">&#8250;</span>
+      </a>
+
+      <a class="contact-row" href="https://wa.me/917719776869" target="_blank" rel="noopener">
+        <span class="contact-icon whatsapp">&#128172;</span>
+        <span class="contact-text">
+          <div class="contact-label">WhatsApp</div>
+          <div class="contact-value">+91 77197 76869</div>
+        </span>
+        <span class="contact-arrow">&#8250;</span>
+      </a>
+    </div>
+  </div>
+
+  <p class="hint">For payment or account issues, please include the Gmail address you use to sign in to the app.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const openBtn = document.getElementById('sidebarOpenBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+
+  function openSidebar(){
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+  }
+  function closeSidebar(){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  }
+
+  openBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidebar();
+  });
+  sidebar.querySelectorAll('.sidebar-link:not(.sidebar-link-toggle)').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+  sidebar.querySelectorAll('.sidebar-sublink').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+
+  const clerkToggle = document.getElementById('clerkServicesToggle');
+  const clerkMenu = document.getElementById('clerkServicesMenu');
+  if (clerkToggle && clerkMenu) {
+    clerkToggle.addEventListener('click', () => {
+      const isOpen = clerkMenu.classList.toggle('open');
+      clerkToggle.classList.toggle('open', isOpen);
+      clerkToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  }
+})();
+</script>
+</body>
+</html>
