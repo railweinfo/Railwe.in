@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Show Salary — NDA Register</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1e30">
+<style>
+  :root{
+    --ink:#161c26;
+    --paper:#f6f3ea;
+    --paper-2:#ece7d8;
+    --rule:#d8d0ba;
+    --navy:#1e3a5f;
+    --navy-2:#152a45;
+    --navy-deep:#0f1e30;
+    --brass:#9c7a2e;
+    --brass-soft:#f1e6c8;
+    --good:#1c6e43;
+    --red:#b3392c;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: var(--serif);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---- Top bar (same letterhead style as the rest of the app) ---- */
+  .topbar{
+    background: var(--navy-deep);
+    padding: 18px 24px 16px;
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    border-bottom: 3px solid var(--brass);
+  }
+  .topbar-app-mark{ display:flex; align-items:center; gap: 10px; }
+  .mark-glyph{
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--brass);
+    color: var(--brass);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--serif); font-weight: 700; font-size: 20px;
+    border-radius: 3px;
+  }
+  .mark-text{ display:flex; flex-direction:column; line-height:1.1; }
+  .mark-text .t1{
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(241,230,200,0.6);
+  }
+  .mark-text .t2{ font-family: var(--serif); font-size: 20px; font-weight: 700; color: #fff; }
+
+  /* ---- Left sidebar menu ---- */
+  .hamburger-btn{
+    width: 36px; height: 36px; border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3);
+    background: transparent;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 4px;
+    cursor:pointer; flex-shrink:0; padding: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .hamburger-btn:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .hamburger-btn span{ display:block; width: 16px; height: 2px; background: var(--brass-soft); border-radius: 1px; }
+  .sidebar-overlay{
+    position: fixed; inset: 0; background: rgba(8,14,22,0.55); z-index: 900;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .sidebar-overlay.open{ opacity: 1; pointer-events: auto; }
+  .sidebar{
+    position: fixed; top: 0; left: 0; bottom: 0; width: 270px; max-width: 82vw;
+    background: var(--navy-deep); border-right: 3px solid var(--brass); z-index: 901;
+    display:flex; flex-direction:column;
+    transform: translateX(-100%); transition: transform 0.22s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.35);
+  }
+  .sidebar.open{ transform: translateX(0); }
+  .sidebar-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 18px 18px 16px; border-bottom: 1px solid rgba(241,230,200,0.15);
+  }
+  .sidebar-close{
+    width: 32px; height: 32px; border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3); background: transparent;
+    color: var(--brass-soft); font-size: 22px; line-height: 1; cursor:pointer;
+  }
+  .sidebar-close:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .sidebar-links{ flex: 1; padding: 14px 10px; overflow-y: auto; }
+  .sidebar-link{
+    display:flex; align-items:center; gap: 12px; padding: 13px 14px; margin-bottom: 4px;
+    border-radius: 3px; color: var(--brass-soft); text-decoration: none;
+    font-family: var(--serif); font-size: 15px; font-weight: 600; letter-spacing: 0.01em;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-link:hover{ background: rgba(241,230,200,0.08); border-left-color: var(--brass); }
+  .sidebar-link.active{ background: rgba(241,230,200,0.12); border-left-color: var(--brass); }
+  .sidebar-link-icon{ font-size: 17px; width: 22px; text-align:center; }
+  .sidebar-link-toggle{
+    width: 100%; background: none; border: none; border-left: 3px solid transparent;
+    cursor: pointer; text-align: left; font-family: var(--serif);
+  }
+  .sidebar-link-toggle .sidebar-link-caret{ margin-left: auto; font-size: 11px; transition: transform 0.18s ease; }
+  .sidebar-link-toggle.open .sidebar-link-caret{ transform: rotate(180deg); }
+  .sidebar-submenu{ max-height: 0; overflow: hidden; transition: max-height 0.2s ease; }
+  .sidebar-submenu.open{ max-height: 200px; }
+  .sidebar-sublink{
+    display:flex; align-items:center; gap: 10px; padding: 11px 14px 11px 44px;
+    color: rgba(241,230,200,0.85); text-decoration: none;
+    font-family: var(--serif); font-size: 14px; font-weight: 500;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-sublink:hover{ background: rgba(241,230,200,0.06); border-left-color: var(--brass); }
+  .sidebar-sublink.active{ background: rgba(241,230,200,0.12); border-left-color: var(--brass); }
+  .sidebar-footer{
+    padding: 14px 18px; border-top: 1px solid rgba(241,230,200,0.15);
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: rgba(241,230,200,0.55);
+  }
+
+  /* ---- Page content ---- */
+  .page-wrap{ max-width: 620px; margin: 0 auto; padding: 30px 20px 60px; }
+  .back-link{
+    display: inline-block; margin-bottom: 18px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+    color: #6b7891; text-decoration: none;
+  }
+  .back-link:hover{ color: var(--ink); text-decoration: underline; }
+  h1{ font-family: var(--serif); font-size: 23px; text-align: center; margin: 0 0 6px; }
+  .subtitle{ text-align: center; font-size: 13.5px; color: #5c6b82; margin: 0 0 26px; line-height: 1.55; }
+
+  .card{
+    background: #fff; border: 1px solid var(--rule); border-top: 3px solid var(--brass);
+    border-radius: 4px; padding: 22px 20px; margin-bottom: 18px;
+  }
+  .card h2{ font-size: 15px; margin: 0 0 4px; }
+  .card .hint{ font-size: 12.5px; color: #5c6b82; margin: 0 0 16px; line-height: 1.55; }
+
+  .drop-zone{
+    border: 2px dashed var(--rule); border-radius: 6px; padding: 26px 16px;
+    text-align: center; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .drop-zone:hover, .drop-zone.dragover{ border-color: var(--brass); background: var(--paper); }
+  .drop-zone .ico{ font-size: 26px; margin-bottom: 6px; }
+  .drop-zone strong{ display:block; font-size: 13.5px; }
+  .drop-zone p{ font-size: 12px; color: #5c6b82; margin: 4px 0 0; }
+  #fileInput{ display:none; }
+
+  #uploadResult{
+    font-family: var(--mono); font-size: 12px; margin-top: 10px;
+    min-height: 16px; text-align: center; color: #5c6b82;
+  }
+  .upload-success{
+    display:none; background: #e9f5ee; border: 1.5px solid #a9d9bb; border-radius: 6px;
+    padding: 13px 15px; margin-top: 14px; gap: 12px; align-items: flex-start;
+  }
+  .upload-success.on{ display:flex; }
+  .upload-success-icon{ font-size: 20px; flex-shrink: 0; }
+  .upload-success-body strong{ display:block; font-size: 13.5px; color: var(--good); margin-bottom: 2px; }
+  .upload-success-body span{ font-size: 12px; color: #2d6a46; }
+
+  .mismatch-warning{
+    display:none; background: #fdf1d6; border: 1.5px solid #e0b84a; border-radius: 6px;
+    padding: 13px 15px; margin-top: 14px;
+  }
+  .mismatch-warning.on{ display:block; }
+  .mismatch-warning strong{ display:block; font-size: 13.5px; color: #7a5200; margin-bottom: 4px; }
+  .mismatch-warning p{ font-size: 12px; color: #7a5a1e; margin: 0 0 8px; line-height: 1.5; }
+  .mismatch-warning ul{ margin: 0; padding-left: 18px; }
+  .mismatch-warning li{ font-size: 12px; color: #7a5a1e; margin-bottom: 4px; line-height: 1.5; }
+
+  .share-wrap{ margin-top: 16px; display:none; }
+  .share-btn{
+    width: 100%; padding: 13px; background: var(--navy-deep); color: #fff; border: none;
+    border-radius: 6px; font-size: 14px; font-weight: 700; font-family: var(--serif);
+    cursor: pointer; display:flex; align-items:center; justify-content:center; gap: 8px;
+  }
+  .share-btn:hover{ opacity: 0.9; }
+  .share-note{ font-size: 11.5px; color: #5c6b82; margin-top: 9px; text-align: center; line-height: 1.55; }
+
+  /* ---- Progress modal ---- */
+  .overlay{
+    position: fixed; inset: 0; background: rgba(10,22,40,0.6); z-index: 950;
+    display:none; align-items:center; justify-content:center; padding: 20px;
+  }
+  .overlay.on{ display:flex; }
+  .modal{
+    background: #fff; border-radius: 8px; padding: 26px 24px 22px; width: 380px;
+    max-width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;
+  }
+  .modal h3{ font-size: 16px; margin: 0 0 6px; }
+  .modal .sub{ font-size: 13px; color: #5c6b82; margin: 0 0 18px; }
+  .spinner{
+    width: 34px; height: 34px; margin: 0 auto 12px;
+    border: 3px solid var(--rule); border-top-color: var(--navy-deep);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .prog-txt{ font-size: 13px; color: #5c6b82; }
+  .done-block{ display:none; flex-direction: column; align-items:center; gap: 8px; }
+  .done-block.on{ display:flex; }
+  .done-icon{ font-size: 32px; }
+  .done-msg{ font-size: 14px; font-weight: 700; color: var(--good); }
+  .done-sub{ font-size: 12px; color: #5c6b82; line-height: 1.6; white-space: pre-line; }
+  .modal-close-btn{
+    margin-top: 18px; padding: 9px 20px; background: var(--paper); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono);
+    font-size: 12px; letter-spacing: 0.03em; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar" aria-label="Main menu">
+  <div class="sidebar-header">
+    <div class="topbar-app-mark">
+      <span class="mark-glyph">N</span>
+      <span class="mark-text">
+        <span class="t1">Register</span>
+        <span class="t2">NDA</span>
+      </span>
+    </div>
+    <button class="sidebar-close" id="sidebarCloseBtn" type="button" aria-label="Close menu">&times;</button>
+  </div>
+  <div class="sidebar-links">
+    <a class="sidebar-link" href="./index.html">
+      <span class="sidebar-link-icon">&#127968;</span> Home
+    </a>
+    <a class="sidebar-link" href="./contact.html">
+      <span class="sidebar-link-icon">&#9993;&#65039;</span> Contact Us
+    </a>
+    <button class="sidebar-link sidebar-link-toggle open" id="clerkServicesToggle" type="button" aria-expanded="true">
+      <span class="sidebar-link-icon">&#128196;</span> Clerk's Services
+      <span class="sidebar-link-caret">&#9662;</span>
+    </button>
+    <div class="sidebar-submenu open" id="clerkServicesMenu">
+      <a class="sidebar-sublink active" href="./show-salary.html">Show Salary</a>
+    </div>
+  </div>
+  <div class="sidebar-footer">Neha Infotech</div>
+</nav>
+
+<header class="topbar">
+  <button class="hamburger-btn" id="sidebarOpenBtn" type="button" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-app-mark">
+    <span class="mark-glyph">N</span>
+    <span class="mark-text">
+      <span class="t1">Register</span>
+      <span class="t2">NDA</span>
+    </span>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <a class="back-link" href="./index.html">&larr; Back to app</a>
+  <h1>Show Salary</h1>
+  <p class="subtitle">Upload a salary report to generate an encrypted salary slip portal you can share with employees. Each person can only unlock their own slip, using their Employee Number.</p>
+
+  <div class="card">
+    <h2>1. Upload salary report</h2>
+    <p class="hint">Accepts the .txt salary report exported from the payroll system.</p>
+
+    <div class="drop-zone" id="dropZone">
+      <div class="ico">&#128196;</div>
+      <strong>Tap to choose a file</strong>
+      <p>or drag &amp; drop a .txt file here</p>
+    </div>
+    <input type="file" id="fileInput" accept=".txt">
+    <div id="uploadResult"></div>
+
+    <div class="upload-success" id="uploadSuccess">
+      <div class="upload-success-icon">&#9989;</div>
+      <div class="upload-success-body">
+        <strong id="uploadSuccessTitle">Data loaded successfully</strong>
+        <span id="uploadSuccessDetail">0 salary slips ready</span>
+      </div>
+    </div>
+
+    <div class="share-wrap" id="shareWrap">
+      <button class="share-btn" id="shareBtn" type="button">
+        &#128272; Generate &amp; Download Encrypted Portal
+      </button>
+      <p class="share-note">Creates one standalone HTML file containing every employee's slip, each encrypted with their own Employee Number as the key. Share that file — no one can open another person's slip.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Progress / done modal -->
+<div class="overlay" id="shareOverlay">
+  <div class="modal">
+    <h3>&#128272; Generating Encrypted Portal</h3>
+    <p class="sub" id="shareSubMsg">Encrypting employee data and building the file&hellip;</p>
+    <div id="shareProgSection">
+      <div class="spinner"></div>
+      <div class="prog-txt" id="shareProgTxt">Encrypting records&hellip;</div>
+    </div>
+    <div class="done-block" id="shareDoneSection">
+      <div class="done-icon">&#127881;</div>
+      <div class="done-msg" id="shareDoneMsg">Portal ready!</div>
+      <div class="done-sub" id="shareDoneSub">File downloaded. Share it with your employees.</div>
+    </div>
+    <button class="modal-close-btn" id="shareCloseBtn" type="button">Close</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ===================================================================
+     This tool has no password gate — anyone who can reach this page can
+     upload a report and generate the encrypted portal. The actual
+     protection lives in the OUTPUT file: each employee's data inside it
+     is individually AES-256 encrypted, keyed to their own Employee
+     Number, so even though this tool is open, the slips it produces are
+     still private per employee once shared.
+     =================================================================== */
+
+  const EMPLOYEES = {};
+
+  /* ---- AES-GCM helpers (unchanged from the original tool) ---- */
+  async function deriveKey(empNo, usage){
+    const enc = new TextEncoder();
+    const km = await crypto.subtle.importKey('raw', enc.encode(empNo), {name:'PBKDF2'}, false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      {name:'PBKDF2', salt:enc.encode('NR-SALARY-SALT-2026'), iterations:100000, hash:'SHA-256'},
+      km, {name:'AES-GCM', length:256}, false, [usage]
+    );
+  }
+  async function encryptEmp(empNo, obj){
+    const key = await deriveKey(empNo, 'encrypt');
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, new TextEncoder().encode(JSON.stringify(obj)));
+    const b64 = buf => { const u8=new Uint8Array(buf); let s=''; for(let i=0;i<u8.length;i++) s+=String.fromCharCode(u8[i]); return btoa(s); };
+    return b64(iv)+':'+b64(ct);
+  }
+
+  /* ---- Drag & drop / file picker ---- */
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) processFile(f);
+  });
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) processFile(f);
+  });
+
+  function processFile(file){
+    const res = document.getElementById('uploadResult');
+    res.textContent = 'Parsing\u2026';
+    document.getElementById('uploadSuccess').classList.remove('on');
+    document.getElementById('shareWrap').style.display = 'none';
+    const reader = new FileReader();
+    reader.onload = e => {
+      try { parseReport(e.target.result, file.name); }
+      catch (err) { res.textContent = 'Error: ' + err.message; res.style.color = 'var(--red)'; }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ---- Parse the .txt salary report (unchanged from the original tool) ---- */
+  /* ===================================================================
+     Generic earnings/deductions extraction.
+
+     The old version only recognised a fixed list of label names (PAY, DA,
+     HRA, NPST-I, ...), so any new earning or deduction the payroll system
+     starts adding later (we've seen AR DA, NHA, TRAV-ALL, CH.EDU-ALL,
+     CONTGT-ALL, BDA appear in real reports with no warning) would get
+     silently dropped — the person using the tool would have no way to
+     know a slip's Earnings/Deductions columns didn't actually add up to
+     its own GROSS Pay / GROSS Deductions figures.
+
+     Instead of a label list, this reads every line between the "Desg:"
+     line and the "GROSS Pay:" line, and extracts ANY "LABEL  NUMBER"
+     pair it finds in the middle third of the line (earnings) or the
+     right third (deductions) of the line — using the report's own
+     column layout, not specific label text. This means a brand-new
+     earning/deduction code the payroll system starts printing in a
+     future month is picked up automatically, with no code change needed
+     here.
+
+     Content past column 113 (bank name, address, PRAN, account number)
+     is deliberately never scanned — testing against a real report showed
+     that without this cutoff, address fragments like "REWARI  HARYANA"
+     could be misread as a deduction line ("REWARI HARYANA" + a trailing
+     postal-code digit) purely because they have the same "words then a
+     number" shape as a real line item.
+     =================================================================== */
+  const KNOWN_LEFT_FIELD_PATTERNS = [
+    /Desg:.*?(?=\s{3,}[A-Za-z])/,
+    /PC7 Level:\S+/,
+    /Basic pay:\S+/,
+    /Duty\/LV Days:\d+\s*\/\d+/,
+    /DOI:\S+/,
+    /TKT NO:\S+/
+  ];
+  const LABEL_RE = '[A-Za-z][A-Za-z0-9/.\\-& ]*[A-Za-z0-9.\\-]';
+
+  function stripKnownLeftFields(line){
+    let work = line;
+    KNOWN_LEFT_FIELD_PATTERNS.forEach(pat => {
+      work = work.replace(pat, m => ' '.repeat(m.length));
+    });
+    return work;
+  }
+
+  // Finds LABEL + NUMBER pairs within a chunk of text, splitting on runs
+  // of 3+ spaces (this report pads generously between columns, so a real
+  // gap between a label and its neighbour is always much wider than the
+  // single space inside a multi-word label like "AR DA" or "TRAN ALL").
+  function extractLineItems(work){
+    const parts = work.split(/\s{3,}/).map(p => p.trim()).filter(Boolean);
+    const items = [];
+    const single = new RegExp('^(' + LABEL_RE + ')\\s+(\\d+)$');
+    for (let i = 0; i < parts.length; i++){
+      const m = parts[i].match(single);
+      if (m){ items.push([m[1].trim(), m[2]]); continue; }
+      if (i + 1 < parts.length){
+        const combined = parts[i] + ' ' + parts[i+1];
+        const m2 = combined.match(single);
+        if (m2){ items.push([m2[1].trim(), m2[2]]); i++; continue; }
+      }
+    }
+    return items;
+  }
+
+  // Pulls every earnings/deductions line item out of one employee's slip
+  // text, returning ordered [label, amount] arrays (order preserved, so
+  // the generated portal lists them the same way the report did) plus
+  // the running totals used for the gross/deductions cross-check.
+  function extractEarningsAndDeductions(slipLines){
+    let startIdx = -1, endIdx = -1;
+    for (let i = 0; i < slipLines.length; i++){
+      const l = slipLines[i];
+      if (startIdx === -1 && /\bPAY\b/.test(l) && !/GROSS/.test(l)) startIdx = i;
+      if (/GROSS Pay/.test(l)){ endIdx = i; break; }
+    }
+    const earnings = [], deductions = [];
+    if (startIdx === -1 || endIdx === -1) return { earnings, deductions };
+
+    for (let i = startIdx; i < endIdx; i++){
+      const raw = slipLines[i];
+      // Never look past column 113 - that's bank/address/PRAN territory,
+      // not earnings or deductions, in this report's layout.
+      const truncated = raw.length > 113 ? raw.slice(0, 113) : raw;
+      const work = stripKnownLeftFields(truncated);
+      extractLineItems(work).forEach(([label, val]) => {
+        const pos = work.indexOf(label);
+        if (pos === -1) return;
+        // Middle third of the line = earnings column, right third =
+        // deductions column, matching this report's fixed layout.
+        (pos < 60 ? earnings : deductions).push([label, val]);
+      });
+    }
+    return { earnings, deductions };
+  }
+
+  // Collapses an ordered [label, amount] list into a plain object for
+  // storage, combining duplicate labels (e.g. "NZRE CCL F" can appear
+  // twice for one employee) into "LABEL (1)", "LABEL (2)", etc.
+  function toLabelledObject(items){
+    const counts = {};
+    const out = {};
+    items.forEach(([label, val]) => {
+      counts[label] = (counts[label] || 0) + 1;
+      const key = counts[label] > 1 ? `${label} (${counts[label]})` : label;
+      // If this is the second occurrence, also rename the first one that
+      // was stored under the bare label, so both get numbered suffixes.
+      if (counts[label] === 2 && out[label] !== undefined){
+        out[`${label} (1)`] = out[label];
+        delete out[label];
+      }
+      out[key] = val;
+    });
+    return out;
+  }
+
+  function parseReport(text, filename){
+    const slips = text.split(/_{50,}/);
+    let count = 0, detectedMonth = '';
+    const mismatches = [];
+    Object.keys(EMPLOYEES).forEach(k => delete EMPLOYEES[k]);
+    slips.forEach(slip => {
+      slip = slip.trim();
+      if (!slip) return;
+      const empM = slip.match(/EMP NO:(\S+)\s+(.+?)\s{2,}Bill Unit/);
+      if (!empM) return;
+      const empNo = empM[1].trim(), name = empM[2].trim();
+      const ex = pat => { const m = slip.match(pat); return m ? m[1] : ''; };
+
+      const slipLines = slip.split('\n');
+      const { earnings: earnItems, deductions: dedItems } = extractEarningsAndDeductions(slipLines);
+      const earns = toLabelledObject(earnItems);
+      const deds = toLabelledObject(dedItems);
+
+      const month = ex(/Salary Slip for \d+:\s*(\S+-\d+)/);
+      if (month && !detectedMonth) detectedMonth = month;
+
+      const grossPay = (slip.match(/GROSS Pay:\s*Rs\.(\d+)/) || ['',''])[1];
+      const grossDeductions = (slip.match(/GROSS Deductions:\s*Rs\.(\d+)/) || ['',''])[1];
+      const sumEarnings = earnItems.reduce((s, [,v]) => s + parseInt(v, 10), 0);
+      const sumDeductions = dedItems.reduce((s, [,v]) => s + parseInt(v, 10), 0);
+
+      // Cross-check: if what we extracted doesn't add up to the report's
+      // own printed GROSS figures, flag it rather than silently showing a
+      // slip that's quietly wrong. This can legitimately happen if the
+      // source report itself has a gap (seen in testing: one employee's
+      // report was simply missing an HRA line) - either way, the person
+      // generating the portal should know about it before sharing it.
+      const earnMismatch = grossPay && sumEarnings !== parseInt(grossPay, 10);
+      const dedMismatch = grossDeductions && sumDeductions !== parseInt(grossDeductions, 10);
+      if (earnMismatch || dedMismatch){
+        mismatches.push({
+          empNo, name,
+          grossPay, sumEarnings, earnMismatch,
+          grossDeductions, sumDeductions, dedMismatch
+        });
+      }
+
+      EMPLOYEES[empNo] = {
+        empNo, name, month,
+        billUnit: ex(/Bill Unit:(\S+)/),
+        station: ex(/STATION:(\S+)/),
+        dept: (ex(/DEPT:\s*(\S+)/) || '').trim(),
+        designation: (ex(/Desg:(.+?)\s{3,}PAY/) || '').trim(),
+        pc7Level: ex(/PC7 Level:(\S+)/),
+        basicPay: ex(/Basic pay:(\d+)/),
+        dutyDays: ex(/Duty\/LV Days:(\d+)/),
+        lvDays: (slip.match(/Duty\/LV Days:\d+\s*\/(\d+)/) || ['',''])[1],
+        fatherHusband: (ex(/F\/H:(.*?)\s{2,}DOB:/) || '').trim(),
+        dob: ex(/DOB:(\S+)/),
+        doa: ex(/DOA:(\S+)/),
+        dor: ex(/DOR:(\S+)/),
+        pan: ex(/PAN:(\S+)/),
+        tktNo: ex(/TKT NO:(\S+)/),
+        pran: ex(/PRAN:(\S+)/),
+        doi: ex(/DOI:(\S+)/),
+        bank: (ex(/BANK:(.+?)[\r\n]/) || '').trim(),
+        accountNo: ex(/A\/C:(\S+)/),
+        ifsc: ex(/IFSC\/MI:(\S+)/),
+        grossPay,
+        grossDeductions,
+        netPay: (slip.match(/NET PAY\s*:\s*Rs\.(\d+)/) || ['',''])[1],
+        earnings: earns,
+        deductions: deds
+      };
+      count++;
+    });
+    document.getElementById('uploadResult').textContent = '';
+    document.getElementById('uploadSuccessTitle').textContent = `${count} salary slip${count !== 1 ? 's' : ''} loaded successfully`;
+    document.getElementById('uploadSuccessDetail').textContent = `From: ${filename}${detectedMonth ? ' \u00b7 ' + detectedMonth : ''}`;
+    document.getElementById('uploadSuccess').classList.add('on');
+    document.getElementById('shareWrap').style.display = count ? 'block' : 'none';
+    renderMismatchWarning(mismatches, count);
+    fileInput.value = '';
+  }
+
+  // Shows a visible warning banner listing any employee whose extracted
+  // Earnings/Deductions don't sum to the report's own printed GROSS
+  // figures, so the person generating the portal can check the source
+  // report rather than unknowingly sharing an incorrect slip.
+  function renderMismatchWarning(mismatches, totalCount){
+    let box = document.getElementById('mismatchWarning');
+    if (!box){
+      box = document.createElement('div');
+      box.id = 'mismatchWarning';
+      box.className = 'mismatch-warning';
+      document.getElementById('uploadSuccess').insertAdjacentElement('afterend', box);
+    }
+    if (!mismatches.length){
+      box.classList.remove('on');
+      box.innerHTML = '';
+      return;
+    }
+    const rows = mismatches.map(m => {
+      const bits = [];
+      if (m.earnMismatch) bits.push(`Earnings total \u20b9${m.sumEarnings} vs report's Gross Pay \u20b9${m.grossPay}`);
+      if (m.dedMismatch) bits.push(`Deductions total \u20b9${m.sumDeductions} vs report's Gross Deductions \u20b9${m.grossDeductions}`);
+      return `<li><strong>${escapeHtml(m.name)}</strong> (${escapeHtml(m.empNo)}) &mdash; ${bits.join('; ')}</li>`;
+    }).join('');
+    box.innerHTML = `
+      <strong>&#9888;&#65039; ${mismatches.length} of ${totalCount} slip${totalCount !== 1 ? 's' : ''} ${mismatches.length === 1 ? 'does' : 'do'} not add up</strong>
+      <p>These employees' extracted Earnings or Deductions don't sum to the totals printed in the report itself. This usually means the source report has a gap or formatting quirk for that person &mdash; check it before sharing the portal.</p>
+      <ul>${rows}</ul>
+    `;
+    box.classList.add('on');
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  /* ---- Generate & download the encrypted portal ---- */
+  document.getElementById('shareBtn').addEventListener('click', startShare);
+  document.getElementById('shareCloseBtn').addEventListener('click', () => {
+    document.getElementById('shareOverlay').classList.remove('on');
+  });
+  document.getElementById('shareOverlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('on');
+  });
+
+  async function startShare(){
+    const empNos = Object.keys(EMPLOYEES);
+    if (!empNos.length) { alert('No data loaded.'); return; }
+    document.getElementById('shareProgSection').style.display = 'block';
+    document.getElementById('shareDoneSection').classList.remove('on');
+    document.getElementById('shareSubMsg').textContent = 'Encrypting employee data\u2026';
+    document.getElementById('shareOverlay').classList.add('on');
+    try {
+      const encMap = {};
+      for (let i = 0; i < empNos.length; i++) {
+        const id = empNos[i];
+        document.getElementById('shareProgTxt').textContent = `Encrypting ${i+1}/${empNos.length}: ${EMPLOYEES[id].name || id}`;
+        encMap[id] = await encryptEmp(id, EMPLOYEES[id]);
+        if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
+      }
+      document.getElementById('shareProgTxt').textContent = 'Building HTML file\u2026';
+      await new Promise(r => setTimeout(r, 40));
+      const month = EMPLOYEES[empNos[0]].month || 'JUNE-2026';
+      const blob = new Blob([buildEncHTML(encMap, month)], {type: 'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Salary_Portal_${month}_Encrypted.html`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      document.getElementById('shareProgSection').style.display = 'none';
+      document.getElementById('shareDoneSection').classList.add('on');
+      document.getElementById('shareDoneMsg').textContent = `Portal ready \u2014 ${empNos.length} employees encrypted`;
+      document.getElementById('shareDoneSub').textContent = `File: Salary_Portal_${month}_Encrypted.html\nShare this file with your employees.\nEach person can only unlock their own slip using their Emp No.`;
+      document.getElementById('shareSubMsg').textContent = 'Download complete.';
+    } catch (err) {
+      document.getElementById('shareSubMsg').textContent = 'Error: ' + err.message;
+      document.getElementById('shareProgSection').style.display = 'none';
+    }
+  }
+
+  /* ---- Builds the standalone, employee-facing encrypted portal.
+     This is the OUTPUT file given to employees — completely unchanged
+     from the original tool, including its own per-employee Employee
+     Number lock. Removing the admin password from THIS page does not
+     touch the security of the generated file at all. ---- */
+  function buildEncHTML(encMap, month){
+    const d = JSON.stringify(encMap);
+    const css = `
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+:root{--navy:#0a1628;--blue:#1a3a6b;--accent:#e8a020;--accent-l:#fef3dc;--text:#1c2b3a;--muted:#6b7f96;--border:#d0dae6;--bg:#f4f7fb;--white:#fff;--green:#1a7a4a;--red:#c0392b;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.hdr{background:var(--navy);position:sticky;top:0;z-index:200;box-shadow:0 2px 14px rgba(0,0,0,.35);}
+.hdr-in{max-width:980px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:14px;}
+.hdr-logo{width:42px;height:42px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:var(--navy);}
+.hdr-text h1{color:#fff;font-size:15px;font-weight:600;}
+.hdr-text p{color:rgba(255,255,255,.42);font-size:11px;margin-top:1px;}
+.hdr-right{margin-left:auto;}
+.hdr-badge{background:var(--accent);color:var(--navy);font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;font-family:'IBM Plex Mono',monospace;}
+.lock-wrap{max-width:980px;margin:60px auto 0;padding:0 24px;}
+.lock-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:48px 36px;text-align:center;box-shadow:0 2px 16px rgba(10,22,40,.08);max-width:480px;margin:0 auto;}
+.lock-icon{font-size:48px;margin-bottom:16px;}
+.lock-card h2{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+.lock-card p{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6;}
+.l-inp{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:9px;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500;color:var(--text);outline:none;letter-spacing:.05em;text-align:center;transition:border-color .2s;}
+.l-inp:focus{border-color:var(--blue);}
+.l-btn{width:100%;margin-top:14px;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s;}
+.l-btn:hover{opacity:.85;}
+.l-err{margin-top:12px;color:var(--red);font-size:13px;display:none;}
+.l-loading{margin-top:12px;color:var(--muted);font-size:13px;display:none;}
+.enc-notice{background:#f0f4f9;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:20px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;text-align:left;}
+.slip-wrap{max-width:980px;margin:28px auto 60px;padding:0 24px;display:none;}
+.slip-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
+.back-btn{background:none;border:1px solid var(--border);padding:8px 16px;border-radius:7px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.back-btn:hover{background:var(--bg);color:var(--text);}
+.act-btns{display:flex;gap:8px;}
+.pdf-btn{background:var(--accent);color:var(--navy);border:none;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:opacity .15s;}
+.pdf-btn:hover{opacity:.85;}
+.prt-btn{background:var(--navy);color:#fff;border:none;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:opacity .15s;}
+.prt-btn:hover{opacity:.82;}
+#slipCard{background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 3px 18px rgba(10,22,40,.09);font-size:12.5px;}
+.sc-stripe{background:var(--navy);padding:0 24px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;}
+.sc-stripe-left{padding:14px 0;}
+.sc-org{color:rgba(255,255,255,.5);font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;margin-bottom:3px;}
+.sc-name{color:#fff;font-size:19px;font-weight:700;}
+.sc-empno{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);margin-top:3px;}
+.sc-month-box{background:var(--accent);color:var(--navy);font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;padding:10px 18px;text-align:center;line-height:1.35;white-space:nowrap;}
+.sc-meta{background:#f0f4f9;border-bottom:1.5px solid var(--border);display:flex;flex-wrap:wrap;}
+.sc-meta-item{padding:7px 18px;border-right:1px solid var(--border);font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.sc-meta-item span{color:var(--text);font-weight:500;}
+.sc-totals{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1.5px solid var(--border);}
+.sc-tot{padding:13px 20px;text-align:center;border-right:1px solid var(--border);}
+.sc-tot:last-child{border-right:none;}
+.sc-tot-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:4px;}
+.sc-tot-val{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;}
+.sc-tot-val.g{color:var(--blue)}.sc-tot-val.d{color:var(--red)}.sc-tot-val.n{color:var(--green)}
+.sc-tot-val em{font-size:12px;opacity:.6;font-style:normal;margin-right:1px;}
+.sc-body{display:grid;grid-template-columns:1.3fr 1fr 1fr;border-bottom:1px solid var(--border);}
+.sc-col{padding:14px 18px;border-right:1px solid var(--border);}
+.sc-col:last-child{border-right:none;}
+.sc-col-ttl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--border);}
+.sc-row{display:flex;justify-content:space-between;align-items:baseline;padding:4.5px 0;border-bottom:1px dashed #eef2f6;font-size:12px;}
+.sc-row:last-child{border-bottom:none;}
+.sc-row .lbl{color:var(--text);padding-right:8px;}
+.sc-row .val{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:500;white-space:nowrap;}
+.ev{color:var(--blue)}.dv{color:var(--red)}
+.sc-foot{padding:11px 22px;background:#fafcff;display:flex;gap:24px 36px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--border);}
+.sc-bank{display:flex;flex-direction:column;gap:1px;}
+.sc-bank label{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.sc-bank span{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;}
+.prov-tag{margin-left:auto;background:var(--accent-l);border:1px solid var(--accent);color:#7a5200;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.recon-note{background:#fdf1d6;border-top:1.5px solid var(--accent);color:#7a5200;font-size:11px;line-height:1.55;padding:10px 22px;}
+@media print{body{background:white!important;}.hdr,.lock-wrap,.slip-topbar{display:none!important;}.slip-wrap{display:block!important;margin:0!important;padding:0!important;}#slipCard{box-shadow:none!important;border:1px solid #ccc!important;border-radius:0!important;}@page{size:A4 landscape;margin:8mm;}}
+@media(max-width:640px){.sc-body{grid-template-columns:1fr;}.sc-col{border-right:none;border-bottom:1px solid var(--border);}.sc-totals{grid-template-columns:1fr;}.sc-tot{border-right:none;border-bottom:1px solid var(--border);}.sc-stripe{grid-template-columns:1fr;}.sc-month-box{display:none;}.lock-card{padding:32px 20px;}}
+`.trim();
+
+    const monthDisplay = month.replace('-', ' ');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Salary Slip &#8212; Northern Railway &#183; ${month}</title>
+<style>${css}</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="hdr-logo">NR</div>
+    <div class="hdr-text">
+      <h1>Northern Railway &#8212; Firozpur Division</h1>
+      <p>Salary Slip Portal &nbsp;&#183;&nbsp; ${month} &nbsp;&#183;&nbsp; Encrypted &amp; Secured</p>
+    </div>
+    <div class="hdr-right"><div class="hdr-badge">${monthDisplay}</div></div>
+  </div>
+</header>
+<div class="lock-wrap" id="lockWrap">
+  <div class="lock-card">
+    <div class="lock-icon">&#128272;</div>
+    <h2>View Your Salary Slip</h2>
+    <p>Enter your <strong>Employee Number</strong> to decrypt and view your personal salary slip for <strong>${month}</strong>.<br>Only your own slip will be unlocked.</p>
+    <input class="l-inp" type="text" id="empInput" placeholder="Enter your Employee Number" onkeydown="if(event.key==='Enter')doUnlock()"/>
+    <button class="l-btn" onclick="doUnlock()">Unlock My Slip &#8594;</button>
+    <div class="l-err" id="lockErr">No slip found. Please check your Employee Number and try again.</div>
+    <div class="l-loading" id="lockLoading">&#128275; Decrypting your slip&#8230;</div>
+    <div class="enc-notice">&#128274; This file contains AES-256 encrypted data. Your Employee Number is the decryption key.</div>
+  </div>
+</div>
+<div class="slip-wrap" id="slipWrap">
+  <div class="slip-topbar">
+    <button class="back-btn" onclick="goBack()">&#8592; Back</button>
+    <div class="act-btns">
+      <button class="pdf-btn" onclick="exportPDF()">&#11015; Export PDF</button>
+      <button class="prt-btn" onclick="window.print()">&#128424; Print</button>
+    </div>
+  </div>
+  <div id="slipCard"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+<script>
+var D=${d};
+async function dk(pw){
+  var t=new TextEncoder();
+  var k=await crypto.subtle.importKey('raw',t.encode(pw),{name:'PBKDF2'},false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:t.encode('NR-SALARY-SALT-2026'),iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['decrypt']);
+}
+function fb(s){var bin=atob(s);var u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+async function doUnlock(){
+  var q=document.getElementById('empInput').value.trim().toUpperCase();
+  var err=document.getElementById('lockErr'),load=document.getElementById('lockLoading');
+  err.style.display='none';
+  if(!q)return;
+  var mk=null;
+  var keys=Object.keys(D);
+  for(var i=0;i<keys.length;i++){if(keys[i].toUpperCase()===q){mk=keys[i];break;}}
+  if(!mk){err.style.display='block';return;}
+  load.style.display='block';
+  try{
+    var ci=D[mk].indexOf(':');
+    var ivB=D[mk].slice(0,ci);
+    var cb=D[mk].slice(ci+1);
+    var key=await dk(mk);
+    var plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:fb(ivB)},key,fb(cb));
+    load.style.display='none';
+    renderSlip(JSON.parse(new TextDecoder().decode(plain)));
+  }catch(e){
+    load.style.display='none';
+    err.textContent='Decryption failed. Please check your Employee Number.';
+    err.style.display='block';
+  }
+}
+function goBack(){
+  document.getElementById('slipWrap').style.display='none';
+  document.getElementById('lockWrap').style.display='block';
+  document.getElementById('empInput').value='';
+  document.getElementById('lockErr').style.display='none';
+}
+function fmt(v){if(!v)return'-';var n=parseInt(v);return isNaN(n)?v:n.toLocaleString('en-IN');}
+function iR(l,v,mono){
+  var st=mono?'font-family:IBM Plex Mono,monospace;font-size:11px':'';
+  return '<div class="sc-row"><span class="lbl">'+l+'</span><span class="val" style="'+st+'">'+(v||'-')+'</span></div>';
+}
+function renderSlip(emp){
+  var earns=emp.earnings||{},deds=emp.deductions||{};
+  var eR='',dR='';
+  var ek=Object.keys(earns);for(var i=0;i<ek.length;i++)eR+='<div class="sc-row"><span class="lbl">'+ek[i]+'</span><span class="val ev">&#8377;&nbsp;'+fmt(earns[ek[i]])+'</span></div>';
+  var dk2=Object.keys(deds);for(var i=0;i<dk2.length;i++)dR+='<div class="sc-row"><span class="lbl">'+dk2[i]+'</span><span class="val dv">&#8377;&nbsp;'+fmt(deds[dk2[i]])+'</span></div>';
+  if(!eR)eR='<div class="sc-row"><span class="lbl" style="color:var(--muted)">-</span></div>';
+  if(!dR)dR='<div class="sc-row"><span class="lbl" style="color:var(--muted)">-</span></div>';
+  var empMonth=emp.month||'${month}';
+  // Second safety net: re-check, right here in the viewer, that the
+  // individual Earnings/Deductions line items actually sum to this
+  // slip's own printed Gross Pay / Gross Deductions. The admin tool
+  // already checks this before the portal is shared, but showing it here
+  // too means a mismatch is never silently invisible to the employee.
+  var sumE=0;for(var i=0;i<ek.length;i++)sumE+=parseInt(earns[ek[i]],10)||0;
+  var sumD=0;for(var i=0;i<dk2.length;i++)sumD+=parseInt(deds[dk2[i]],10)||0;
+  var gp=parseInt(emp.grossPay,10)||0,gd=parseInt(emp.grossDeductions,10)||0;
+  var mismatchNote='';
+  if(emp.grossPay&&sumE!==gp){mismatchNote+='Earnings shown (&#8377;'+sumE.toLocaleString('en-IN')+') do not match this slip\u2019s Gross Pay (&#8377;'+gp.toLocaleString('en-IN')+'). ';}
+  if(emp.grossDeductions&&sumD!==gd){mismatchNote+='Deductions shown (&#8377;'+sumD.toLocaleString('en-IN')+') do not match this slip\u2019s Gross Deductions (&#8377;'+gd.toLocaleString('en-IN')+'). ';}
+  var mismatchHtml=mismatchNote?'<div class="recon-note">&#9888;&#65039; '+mismatchNote+'Please contact the payroll office if this looks wrong.</div>':'';
+  var html='<div class="sc-stripe"><div class="sc-stripe-left">'
+    +'<div class="sc-org">Northern Railway &middot; Firozpur Division &middot; Mechanical Dept &middot; Bill Unit: '+(emp.billUnit||'0304-802/SSE/C&W/A')+'</div>'
+    +'<div class="sc-name">'+(emp.name||'')+'</div>'
+    +'<div class="sc-empno">EMP NO: '+emp.empNo+(emp.tktNo?' &nbsp;&middot;&nbsp; TKT: '+emp.tktNo:'')+'</div>'
+    +'</div><div class="sc-month-box">'+empMonth+'<br><span style="font-size:9px;font-weight:400;opacity:.7">SALARY SLIP</span></div></div>'
+    +'<div class="sc-meta">'
+    +'<div class="sc-meta-item">Designation: <span>'+(emp.designation||'-')+'</span></div>'
+    +'<div class="sc-meta-item">Pay Level: <span>PC7 Lvl '+(emp.pc7Level||'-')+'</span></div>'
+    +'<div class="sc-meta-item">Basic Pay: <span>&#8377; '+fmt(emp.basicPay)+'</span></div>'
+    +'<div class="sc-meta-item">Duty Days: <span>'+(emp.dutyDays||'-')+' / Leave: '+(emp.lvDays||'0')+'</span></div>'
+    +'<div class="sc-meta-item">DOI: <span>'+(emp.doi||'-')+'</span></div>'
+    +'<div class="sc-meta-item">PRAN: <span>'+(emp.pran||'-')+'</span></div>'
+    +'</div>'
+    +'<div class="sc-totals">'
+    +'<div class="sc-tot"><div class="sc-tot-lbl">Gross Pay</div><div class="sc-tot-val g"><em>&#8377;</em>'+fmt(emp.grossPay)+'</div></div>'
+    +'<div class="sc-tot"><div class="sc-tot-lbl">Total Deductions</div><div class="sc-tot-val d"><em>&#8377;</em>'+fmt(emp.grossDeductions)+'</div></div>'
+    +'<div class="sc-tot"><div class="sc-tot-lbl">Net Pay</div><div class="sc-tot-val n"><em>&#8377;</em>'+fmt(emp.netPay)+'</div></div>'
+    +'</div>'
+    +'<div class="sc-body">'
+    +'<div class="sc-col"><div class="sc-col-ttl">Employee Details</div>'
+    +iR('Father / Husband',emp.fatherHusband)
+    +iR('Date of Birth',emp.dob,true)
+    +iR('Date of Appointment',emp.doa,true)
+    +iR('Date of Retirement',emp.dor,true)
+    +iR('PAN',emp.pan,true)
+    +iR('Station',emp.station||'ASR')
+    +iR('Dept',emp.dept||'MECHANICAL')
+    +'</div>'
+    +'<div class="sc-col"><div class="sc-col-ttl">Earnings</div>'+eR+'</div>'
+    +'<div class="sc-col"><div class="sc-col-ttl">Deductions</div>'+dR+'</div>'
+    +'</div>'
+    +'<div class="sc-foot">'
+    +'<div class="sc-bank"><label>Bank</label><span>'+(emp.bank||'-')+'</span></div>'
+    +'<div class="sc-bank"><label>Account No.</label><span>'+(emp.accountNo||'-')+'</span></div>'
+    +'<div class="sc-bank"><label>IFSC</label><span>'+(emp.ifsc||'-')+'</span></div>'
+    +'<div class="sc-bank"><label>Pay Mode</label><span>Bank Transfer</span></div>'
+    +'<span class="prov-tag"># Provisional</span>'
+    +'</div>'
+    +mismatchHtml;
+  document.getElementById('slipCard').innerHTML=html;
+  document.getElementById('lockWrap').style.display='none';
+  document.getElementById('slipWrap').style.display='block';
+  document.getElementById('slipWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function exportPDF(){
+  var el=document.getElementById('slipCard');
+  var name=(el.querySelector('.sc-name')||{}).textContent||'Salary_Slip';
+  var empno=(el.querySelector('.sc-empno')||{}).textContent||'';
+  html2pdf().set({margin:[6,6,6,6],filename:'Salary_Slip_'+name.trim().replace(/\\s+/g,'_')+'_'+empno.replace(/[^0-9A-Z]/gi,'').slice(-8)+'.pdf',image:{type:'jpeg',quality:.98},html2canvas:{scale:2.2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(el).save();
+}
+<\/script>
+</body></html>`;
+    return html;
+  }
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const openBtn = document.getElementById('sidebarOpenBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+
+  function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('open'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+
+  openBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+  sidebar.querySelectorAll('.sidebar-link:not(.sidebar-link-toggle)').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+  sidebar.querySelectorAll('.sidebar-sublink').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+
+  const clerkToggle = document.getElementById('clerkServicesToggle');
+  const clerkMenu = document.getElementById('clerkServicesMenu');
+  if (clerkToggle && clerkMenu) {
+    clerkToggle.addEventListener('click', () => {
+      const isOpen = clerkMenu.classList.toggle('open');
+      clerkToggle.classList.toggle('open', isOpen);
+      clerkToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  }
+})();
+</script>
+</body>
+</html>
