@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absentee Days Calculator — NDA Register</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1e30">
+<style>
+  :root{
+    --ink:#161c26;
+    --paper:#f6f3ea;
+    --paper-2:#ece7d8;
+    --rule:#d8d0ba;
+    --navy:#1e3a5f;
+    --navy-2:#152a45;
+    --navy-deep:#0f1e30;
+    --brass:#9c7a2e;
+    --brass-soft:#f1e6c8;
+    --good:#1c6e43;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: var(--serif);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---- Top bar (same letterhead style as the rest of the app) ---- */
+  .topbar{
+    background: var(--navy-deep);
+    padding: 18px 24px 16px;
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    border-bottom: 3px solid var(--brass);
+  }
+  .topbar-app-mark{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .mark-glyph{
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--brass);
+    color: var(--brass);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 20px;
+    border-radius: 3px;
+  }
+  .mark-text{ display:flex; flex-direction:column; line-height:1.1; }
+  .mark-text .t1{
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(241,230,200,0.6);
+  }
+  .mark-text .t2{
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* ---- Left sidebar menu ---- */
+  .hamburger-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3);
+    background: transparent;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 4px;
+    cursor:pointer;
+    flex-shrink:0;
+    padding: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .hamburger-btn:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .hamburger-btn span{
+    display:block;
+    width: 16px;
+    height: 2px;
+    background: var(--brass-soft);
+    border-radius: 1px;
+  }
+  .sidebar-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(8,14,22,0.55);
+    z-index: 900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .sidebar-overlay.open{ opacity: 1; pointer-events: auto; }
+  .sidebar{
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 270px;
+    max-width: 82vw;
+    background: var(--navy-deep);
+    border-right: 3px solid var(--brass);
+    z-index: 901;
+    display:flex;
+    flex-direction:column;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+  }
+  .sidebar.open{ transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.35); }
+  .sidebar-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 18px 18px 16px;
+    border-bottom: 1px solid rgba(241,230,200,0.15);
+  }
+  .sidebar-close{
+    width: 32px; height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3);
+    background: transparent;
+    color: var(--brass-soft);
+    font-size: 22px;
+    line-height: 1;
+    cursor:pointer;
+  }
+  .sidebar-close:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .sidebar-links{
+    flex: 1;
+    padding: 14px 10px;
+    overflow-y: auto;
+  }
+  .sidebar-link{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    padding: 13px 14px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    color: var(--brass-soft);
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-link:hover{ background: rgba(241,230,200,0.08); border-left-color: var(--brass); }
+  .sidebar-link.active{ background: rgba(241,230,200,0.12); border-left-color: var(--brass); }
+  .sidebar-link-icon{ font-size: 17px; width: 22px; text-align:center; }
+  .sidebar-link-toggle{
+    width: 100%;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--serif);
+  }
+  .sidebar-link-toggle .sidebar-link-caret{
+    margin-left: auto;
+    font-size: 11px;
+    transition: transform 0.18s ease;
+  }
+  .sidebar-link-toggle.open .sidebar-link-caret{ transform: rotate(180deg); }
+  .sidebar-submenu{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+  }
+  .sidebar-submenu.open{ max-height: 200px; }
+  .sidebar-sublink{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 11px 14px 11px 44px;
+    color: rgba(241,230,200,0.85);
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-sublink:hover{ background: rgba(241,230,200,0.06); border-left-color: var(--brass); }
+  .sidebar-footer{
+    padding: 14px 18px;
+    border-top: 1px solid rgba(241,230,200,0.15);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(241,230,200,0.55);
+  }
+
+  /* ---- Absentee days calculator ----
+     Every rule is scoped under .absc so none of it can leak into (or be
+     overridden by) the shared menu/header styles above. The calculator
+     keeps its own colour palette via the variables on .absc.
+     Its original dark-mode block is intentionally not carried over: the
+     rest of the app is light-only, so a dark-mode phone would otherwise
+     show light page text on a light page background. */
+  .back-link{
+    display: inline-block;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: #6b7891;
+    text-decoration: none;
+  }
+  .back-link:hover{ color: var(--ink); text-decoration: underline; }
+
+  .absc{
+    --bg:#e9eee8;
+    --surface:#f8faf6;
+    --ink:#1c2740;
+    --muted:#5d6a7d;
+    --line:#c9d3c8;
+    --accent:#f0b429;
+    --accent-ink:#1c2740;
+    --range:#d6e2f3;
+    --font-body:"Avenir Next","Segoe UI",system-ui,sans-serif;
+    --font-num:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    color-scheme: light;
+    width:100%;
+    max-width:560px;
+    margin:0 auto;
+    padding:24px 16px 56px;
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.5;
+  }
+  .absc [hidden]{ display:none !important; }
+  .absc h1{
+    font-family:var(--font-num);
+    font-size:1.6rem;
+    font-weight:600;
+    margin:4px 0 20px;
+    text-align:left;
+  }
+  .absc .inputs{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .absc label.field{ display:block; font-size:.85rem; color:var(--muted); }
+  .absc input[type="date"]{
+    display:block;
+    width:100%;
+    margin-top:4px;
+    padding:12px;
+    font:inherit;
+    font-size:1rem;
+    color:var(--ink);
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:8px;
+  }
+  .absc input:focus-visible,
+  .absc button:focus-visible{
+    outline:3px solid var(--accent);
+    outline-offset:2px;
+  }
+  .absc .options{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px 16px;
+    margin:14px 0 6px;
+    font-size:.95rem;
+  }
+  .absc .options label{ display:flex; align-items:center; gap:8px; cursor:pointer; }
+  .absc .options input{ width:18px; height:18px; accent-color:var(--accent); }
+  .absc button.ghost{
+    margin-left:auto;
+    font:inherit;
+    font-size:.85rem;
+    color:var(--ink);
+    background:transparent;
+    border:1.5px solid var(--line);
+    border-radius:999px;
+    padding:6px 14px;
+    cursor:pointer;
+  }
+  .absc button.ghost:hover{ border-color:var(--ink); }
+  .absc .go{
+    display:block;
+    width:100%;
+    margin-top:14px;
+    padding:14px;
+    font:inherit;
+    font-size:1.05rem;
+    font-weight:700;
+    color:var(--accent-ink);
+    background:var(--accent);
+    border:0;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .absc .go:hover{ filter:brightness(1.06); }
+  .absc .go:active{ transform:translateY(1px); }
+  .absc .msg{ min-height:1.4em; margin:8px 0 0; font-size:.9rem; color:var(--muted); }
+
+  .absc .result{
+    margin:22px 0 16px;
+    padding:22px 20px;
+    background:var(--ink);
+    color:var(--bg);
+    border-radius:14px;
+  }
+  .absc .result .big{
+    font-family:var(--font-num);
+    font-size:clamp(3.4rem, 18vw, 5.5rem);
+    line-height:1;
+    font-weight:600;
+    color:var(--accent);
+  }
+  .absc .result .big small{
+    font-family:var(--font-body);
+    font-size:1.1rem;
+    font-weight:500;
+    color:var(--bg);
+    margin-left:8px;
+  }
+  .absc .result .sentence{ margin-top:10px; font-size:.95rem; opacity:.9; }
+  .absc .note{ margin-top:6px; font-size:.85rem; color:var(--accent); }
+
+  .absc .stats{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:0;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    background:var(--surface);
+  }
+  .absc .stats div{ padding:12px 14px; border-bottom:1px solid var(--line); }
+  .absc .stats div:nth-child(odd){ border-right:1px solid var(--line); }
+  .absc .stats div:nth-last-child(-n+2){ border-bottom:0; }
+  .absc .stats b{ display:block; font-family:var(--font-num); font-size:1.25rem; font-weight:600; }
+  .absc .stats span{ font-size:.8rem; color:var(--muted); }
+
+  .absc .calendars{ margin-top:20px; display:grid; gap:14px; }
+  .absc .month{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:12px 12px 10px;
+  }
+  .absc .month h2{ font-size:.95rem; font-weight:600; margin:0 0 8px; }
+  .absc .grid{ display:grid; grid-template-columns:repeat(7, 1fr); row-gap:2px; text-align:center; }
+  .absc .dow{ font-size:.7rem; color:var(--muted); padding-bottom:4px; }
+  .absc .cell{ font-size:.85rem; padding:6px 0; font-variant-numeric:tabular-nums; }
+  .absc .cell.in{ background:var(--range); }
+  .absc .cell.edge{
+    background:var(--accent);
+    color:var(--accent-ink);
+    font-weight:700;
+    border-radius:50%;
+    position:relative;
+    z-index:1;
+  }
+  .absc .cell.in.first{ border-radius:999px 0 0 999px; }
+  .absc .cell.in.last{ border-radius:0 999px 999px 0; }
+  .absc .cell.in.first.last{ border-radius:999px; }
+  .absc .hint{ font-size:.8rem; color:var(--muted); margin-top:8px; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar" aria-label="Main menu">
+  <div class="sidebar-header">
+    <div class="topbar-app-mark">
+      <span class="mark-glyph">N</span>
+      <span class="mark-text">
+        <span class="t1">Register</span>
+        <span class="t2">NDA</span>
+      </span>
+    </div>
+    <button class="sidebar-close" id="sidebarCloseBtn" type="button" aria-label="Close menu">&times;</button>
+  </div>
+  <div class="sidebar-links">
+    <a class="sidebar-link" href="./index.html">
+      <span class="sidebar-link-icon">&#127968;</span> Home
+    </a>
+    <a class="sidebar-link" href="./about.html">
+      <span class="sidebar-link-icon">&#8505;&#65039;</span> About Us
+    </a>
+    <a class="sidebar-link" href="./contact.html">
+      <span class="sidebar-link-icon">&#9993;&#65039;</span> Contact Us
+    </a>
+    <button class="sidebar-link sidebar-link-toggle" id="clerkServicesToggle" type="button" aria-expanded="false">
+      <span class="sidebar-link-icon">&#128196;</span> Clerk's Services
+      <span class="sidebar-link-caret">&#9662;</span>
+    </button>
+    <div class="sidebar-submenu" id="clerkServicesMenu">
+      <a class="sidebar-sublink" href="./show-salary.html">Show Salary</a>
+    </div>
+    <a class="sidebar-link active" href="./absentee-days.html">
+      <span class="sidebar-link-icon">&#128197;</span> Absentee Days Calculator
+    </a>
+  </div>
+  <div class="sidebar-footer">Sugamshree Workforce Management Pvt Ltd</div>
+</nav>
+
+<header class="topbar">
+  <button class="hamburger-btn" id="sidebarOpenBtn" type="button" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-app-mark">
+    <span class="mark-glyph">N</span>
+    <span class="mark-text">
+      <span class="t1">Register</span>
+      <span class="t2">NDA</span>
+    </span>
+  </div>
+</header>
+
+<main class="absc">
+  <a class="back-link" href="./index.html">&larr; Back to app</a>
+  <h1>Absentee Days Calculator</h1>
+
+  <div class="inputs">
+    <label class="field">From
+      <input type="date" id="start">
+    </label>
+    <label class="field">To
+      <input type="date" id="end">
+    </label>
+  </div>
+
+  <div class="options">
+    <label><input type="checkbox" id="inclusive" checked> Count both start and end day</label>
+    <button class="ghost" id="today" type="button">Start from today</button>
+  </div>
+
+  <button class="go" id="go" type="button">Go</button>
+  <p class="msg" id="msg" role="alert"></p>
+
+  <section class="result" id="result" aria-live="polite" hidden>
+    <div class="big" id="total">&ndash;<small>days</small></div>
+    <div class="sentence" id="sentence"></div>
+    <div class="note" id="note"></div>
+  </section>
+
+  <section class="stats" id="stats" hidden></section>
+  <section class="calendars" id="calendars"></section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const openBtn = document.getElementById('sidebarOpenBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+
+  function openSidebar(){
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+  }
+  function closeSidebar(){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  }
+
+  openBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidebar();
+  });
+  sidebar.querySelectorAll('.sidebar-link:not(.sidebar-link-toggle)').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+  sidebar.querySelectorAll('.sidebar-sublink').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+
+  const clerkToggle = document.getElementById('clerkServicesToggle');
+  const clerkMenu = document.getElementById('clerkServicesMenu');
+  if (clerkToggle && clerkMenu) {
+    clerkToggle.addEventListener('click', () => {
+      const isOpen = clerkMenu.classList.toggle('open');
+      clerkToggle.classList.toggle('open', isOpen);
+      clerkToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  }
+})();
+</script>
+
+<script>
+/* Absentee days calculator. Logic is the original calculator's, wrapped in a
+   function so its helper names can't clash with the menu script, with one fix:
+   ymd() below. */
+(function () {
+"use strict";
+const $ = id => document.getElementById(id);
+const DAY = 86400000;
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const parse = v => {
+  if (!v) return null;
+  const [y, m, d] = v.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+};
+const fmt = d => {
+  const p = n => String(n).padStart(2, "0");
+  return `${p(d.getUTCDate())}/${p(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+};
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+function weekdaysBetween(a, b) {
+  let n = 0;
+  for (let t = a.getTime(); t <= b.getTime(); t += DAY) {
+    const wd = new Date(t).getUTCDay();
+    if (wd !== 0 && wd !== 6) n++;
+  }
+  return n;
+}
+
+// Years / months / days between a and b (b exclusive)
+function ymd(a, b) {
+  let y = b.getUTCFullYear() - a.getUTCFullYear();
+  let m = b.getUTCMonth() - a.getUTCMonth();
+  let d = b.getUTCDate() - a.getUTCDate();
+  if (d < 0) {
+    m--;
+    d += new Date(Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), 0)).getUTCDate();
+  }
+  // FIX: a range that starts on the 29th-31st and runs across February could
+  // still be negative here (e.g. 31 Jan to 28 Feb showed "1 month, -2 days"),
+  // because February is too short to absorb the borrow above. Borrow once more
+  // from the month before it. This only runs when the original logic would
+  // have produced a negative number of days, so every other result is unchanged.
+  if (d < 0) {
+    m--;
+    d += new Date(Date.UTC(b.getUTCFullYear(), b.getUTCMonth() - 1, 0)).getUTCDate();
+  }
+  while (m < 0) { y--; m += 12; }
+  return { y, m, d };
+}
+
+function renderCalendars(start, end) {
+  const box = $("calendars");
+  box.innerHTML = "";
+  const sm = start.getUTCFullYear() * 12 + start.getUTCMonth();
+  const em = end.getUTCFullYear() * 12 + end.getUTCMonth();
+  if (em - sm > 2) {
+    box.innerHTML = '<p class="hint">Calendar preview is shown for ranges up to 3 months.</p>';
+    return;
+  }
+  for (let k = sm; k <= em; k++) {
+    const year = Math.floor(k / 12), month = k % 12;
+    const first = new Date(Date.UTC(year, month, 1));
+    const days = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    const offset = (first.getUTCDay() + 6) % 7; // Monday first
+    let html = `<div class="month"><h2>${MONTHS[month]} ${year}</h2><div class="grid">`;
+    ["Mo","Tu","We","Th","Fr","Sa","Su"].forEach(d => html += `<div class="dow">${d}</div>`);
+    for (let i = 0; i < offset; i++) html += "<div></div>";
+    for (let d = 1; d <= days; d++) {
+      const t = Date.UTC(year, month, d);
+      const inRange = t >= start.getTime() && t <= end.getTime();
+      const isEdge = t === start.getTime() || t === end.getTime();
+      const col = (offset + d - 1) % 7;
+      let cls = "cell";
+      if (inRange) {
+        cls += " in";
+        if (col === 0 || d === 1 || t === start.getTime()) cls += " first";
+        if (col === 6 || d === days || t === end.getTime()) cls += " last";
+      }
+      if (isEdge) cls += " edge";
+      html += `<div class="${cls}">${d}</div>`;
+    }
+    html += "</div></div>";
+    box.insertAdjacentHTML("beforeend", html);
+  }
+}
+
+function calculate() {
+  let a = parse($("start").value);
+  let b = parse($("end").value);
+  const total = $("total"), sentence = $("sentence"), note = $("note");
+  const stats = $("stats"), cals = $("calendars");
+  note.textContent = "";
+
+  if (!a || !b) {
+    $("msg").textContent = "Enter both a start date and an end date, then press Go.";
+    $("result").hidden = true;
+    stats.hidden = true;
+    cals.innerHTML = "";
+    return;
+  }
+  $("msg").textContent = "";
+  $("result").hidden = false;
+  stats.hidden = false;
+
+  if (b < a) {
+    [a, b] = [b, a];
+    note.textContent = "The end date was earlier than the start date, so the dates were swapped.";
+  }
+
+  const inclusive = $("inclusive").checked;
+  const diff = Math.round((b - a) / DAY);
+  const n = diff + (inclusive ? 1 : 0);
+
+  total.innerHTML = `${n}<small>${n === 1 ? "day" : "days"}</small>`;
+  sentence.textContent = `${fmt(a)} to ${fmt(b)} = ${plural(n, "day")}` +
+    (inclusive ? " (both days counted)" : " (end day not counted)");
+
+  const wk = Math.floor(n / 7), rd = n % 7;
+  const endExcl = new Date(b.getTime() + (inclusive ? DAY : 0));
+  const { y, m, d } = ymd(a, endExcl);
+  const parts = [];
+  if (y) parts.push(plural(y, "year"));
+  if (m) parts.push(plural(m, "month"));
+  if (d || !parts.length) parts.push(plural(d, "day"));
+
+  stats.innerHTML = `
+    <div><b>${plural(wk, "week")}${rd ? ` ${plural(rd, "day")}` : ""}</b><span>In weeks</span></div>
+    <div><b>${parts.join(", ")}</b><span>In years, months, days</span></div>
+    <div><b>${weekdaysBetween(a, inclusive ? b : new Date(b.getTime() - DAY))}</b><span>Weekdays (Mon–Fri)</span></div>
+    <div><b>${(n * 24).toLocaleString()}</b><span>Hours</span></div>`;
+
+  renderCalendars(a, b);
+}
+
+function reset() {
+  $("result").hidden = true;
+  $("stats").hidden = true;
+  $("calendars").innerHTML = "";
+  $("msg").textContent = "";
+}
+$("go").addEventListener("click", calculate);
+["start", "end"].forEach(id => $(id).addEventListener("input", reset));
+$("inclusive").addEventListener("input", () => { if (!$("result").hidden) calculate(); });
+$("today").addEventListener("click", () => {
+  const t = new Date();
+  const p = n => String(n).padStart(2, "0");
+  $("start").value = `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}`;
+  reset();
+});
+reset();
+})();
+</script>
+</body>
+</html>
