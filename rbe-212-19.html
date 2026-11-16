@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>212/19 — Pay Fixation on Promotion — NDA Register</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1e30">
+<style>
+  :root{
+    --ink:#161c26;
+    --paper:#f6f3ea;
+    --paper-2:#ece7d8;
+    --rule:#d8d0ba;
+    --navy:#1e3a5f;
+    --navy-2:#152a45;
+    --navy-deep:#0f1e30;
+    --brass:#9c7a2e;
+    --brass-soft:#f1e6c8;
+    --good:#1c6e43;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: var(--serif);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---- Top bar (same letterhead style as the rest of the app) ---- */
+  .topbar{
+    background: var(--navy-deep);
+    padding: 18px 24px 16px;
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    border-bottom: 3px solid var(--brass);
+  }
+  .topbar-app-mark{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .mark-glyph{
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--brass);
+    color: var(--brass);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 20px;
+    border-radius: 3px;
+  }
+  .mark-text{ display:flex; flex-direction:column; line-height:1.1; }
+  .mark-text .t1{
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(241,230,200,0.6);
+  }
+  .mark-text .t2{
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* ---- Left sidebar menu ---- */
+  .hamburger-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3);
+    background: transparent;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 4px;
+    cursor:pointer;
+    flex-shrink:0;
+    padding: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .hamburger-btn:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .hamburger-btn span{
+    display:block;
+    width: 16px;
+    height: 2px;
+    background: var(--brass-soft);
+    border-radius: 1px;
+  }
+  .sidebar-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(8,14,22,0.55);
+    z-index: 900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .sidebar-overlay.open{ opacity: 1; pointer-events: auto; }
+  .sidebar{
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 270px;
+    max-width: 82vw;
+    background: var(--navy-deep);
+    border-right: 3px solid var(--brass);
+    z-index: 901;
+    display:flex;
+    flex-direction:column;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+  }
+  .sidebar.open{ transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.35); }
+  .sidebar-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 18px 18px 16px;
+    border-bottom: 1px solid rgba(241,230,200,0.15);
+  }
+  .sidebar-close{
+    width: 32px; height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(241,230,200,0.3);
+    background: transparent;
+    color: var(--brass-soft);
+    font-size: 22px;
+    line-height: 1;
+    cursor:pointer;
+  }
+  .sidebar-close:hover{ background: rgba(241,230,200,0.1); border-color: var(--brass); }
+  .sidebar-links{
+    flex: 1;
+    padding: 14px 10px;
+    overflow-y: auto;
+  }
+  .sidebar-link{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    padding: 13px 14px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    color: var(--brass-soft);
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-link:hover{ background: rgba(241,230,200,0.08); border-left-color: var(--brass); }
+  .sidebar-link.active{ background: rgba(241,230,200,0.12); border-left-color: var(--brass); }
+  .sidebar-link-icon{ font-size: 17px; width: 22px; text-align:center; }
+  .sidebar-link-toggle{
+    width: 100%;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--serif);
+  }
+  .sidebar-link-toggle .sidebar-link-caret{
+    margin-left: auto;
+    font-size: 11px;
+    transition: transform 0.18s ease;
+  }
+  .sidebar-link-toggle.open .sidebar-link-caret{ transform: rotate(180deg); }
+  .sidebar-submenu{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+  }
+  .sidebar-submenu.open{ max-height: 200px; }
+  .sidebar-sublink{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 11px 14px 11px 44px;
+    color: rgba(241,230,200,0.85);
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-sublink:hover{ background: rgba(241,230,200,0.06); border-left-color: var(--brass); }
+  .sidebar-sublink.active{ background: rgba(241,230,200,0.12); border-left-color: var(--brass); }
+  .sidebar-footer{
+    padding: 14px 18px;
+    border-top: 1px solid rgba(241,230,200,0.15);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(241,230,200,0.55);
+  }
+
+  .back-link{
+    display: inline-block;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: #6b7891;
+    text-decoration: none;
+  }
+  .back-link:hover{ color: var(--ink); text-decoration: underline; }
+
+  /* ---- 212/19: Pay Fixation on Promotion ----
+     Every rule is scoped under .pfx so none of it can leak into (or be
+     overridden by) the shared menu/header styles above. The original
+     calculator styles bare header/button/label/table elements and redefines
+     :root variables (including --paper and --ink, which the shared styles
+     also use), so unscoped it would restyle the app's own top bar and menu
+     buttons. Its dark-mode block is intentionally not carried over: the rest
+     of the app is light-only, so a dark-mode phone would otherwise show
+     light text on a light page. */
+  .pfx{
+    --card:#ffffff; --ink:#1b2430; --muted:#5b6675;
+    --rail:#1f3a5f; --rail-ink:#ffffff; --line:#cfd6e0; --accent:#b4231f; --ok:#17613a;
+    --field:#ffffff; --result:#eef3fa;
+    color-scheme: light;
+    max-width:720px; margin:0 auto; padding:16px 16px 56px;
+    color:var(--ink);
+    font:16px/1.5 "Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  .pfx header{background:var(--rail);color:var(--rail-ink);padding:18px 20px;border-radius:6px 6px 0 0}
+  .pfx header h1{margin:0;font-size:1.45rem;font-weight:700;letter-spacing:.2px}
+  .pfx header p{margin:4px 0 0;font-size:.85rem;opacity:.85}
+  .pfx form{background:var(--card);border:1px solid var(--line);border-top:0;padding:20px;border-radius:0 0 6px 6px}
+  .pfx .row{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .pfx .row:last-of-type{border-bottom:0}
+  .pfx label,.pfx .lbl{font-weight:600}
+  .pfx .hint{display:block;font-weight:400;font-size:.8rem;color:var(--muted)}
+  .pfx select,.pfx input[type=text]{width:100%;max-width:280px;padding:9px 10px;font:inherit;color:var(--ink);
+    background:var(--field);border:1px solid var(--line);border-radius:4px}
+  .pfx select:focus-visible,.pfx input:focus-visible,.pfx button:focus-visible{outline:3px solid var(--rail);outline-offset:1px}
+  .pfx .radios{display:flex;gap:22px}
+  .pfx .radios label{font-weight:400;display:flex;gap:6px;align-items:center}
+  .pfx .actions{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap}
+  .pfx .or{color:var(--muted);font-size:.85rem}
+  .pfx .cmp th{font-size:.85rem;text-align:right;padding:8px 0 8px 12px;border-bottom:2px solid var(--line)}
+  .pfx .cmp th:first-child{text-align:left;padding-left:0}
+  .pfx .cmp td{text-align:right;font-weight:600;font-size:.92rem}
+  .pfx .cmp td:first-child{text-align:left;font-weight:400}
+  .pfx .cmp tr.final td{font-size:1rem}
+  .pfx .remark{margin-top:14px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--ok);border-radius:4px}
+  .pfx .remark b{color:var(--ok)}
+  .pfx button{font:inherit;font-weight:600;padding:10px 22px;border-radius:4px;border:1px solid var(--rail);cursor:pointer}
+  .pfx .primary{background:var(--rail);color:var(--rail-ink)}
+  .pfx .ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .pfx .err{color:var(--accent);font-size:.9rem;min-height:1.3em;margin:10px 0 0}
+  .pfx #out{display:none;margin-top:18px;background:var(--result);border:1px solid var(--line);border-left:5px solid var(--rail);border-radius:4px;padding:6px 18px 14px}
+  .pfx #out h2{font-size:1.05rem;margin:12px 0 6px}
+  .pfx table{width:100%;border-collapse:collapse}
+  .pfx td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .pfx td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;padding-left:12px}
+  .pfx tr.final td{font-size:1.15rem;color:var(--ok);border-bottom:0;padding-top:12px}
+  .pfx .note{font-size:.82rem;color:var(--muted);margin:10px 0 0}
+  .pfx noscript{color:var(--accent);font-weight:700}
+  @media (max-width:560px){.pfx .row{grid-template-columns:1fr}.pfx select,.pfx input[type=text]{max-width:none}}
+  /* The original page is printable (it hides its own header, buttons and
+     error line). Also hide the app's menu chrome so a printout is just the
+     result. */
+  @media print{
+    .pfx header,.pfx form .actions,.pfx .err{display:none}
+    .topbar,.sidebar,.sidebar-overlay,.back-link{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar" aria-label="Main menu">
+  <div class="sidebar-header">
+    <div class="topbar-app-mark">
+      <span class="mark-glyph">N</span>
+      <span class="mark-text">
+        <span class="t1">Register</span>
+        <span class="t2">NDA</span>
+      </span>
+    </div>
+    <button class="sidebar-close" id="sidebarCloseBtn" type="button" aria-label="Close menu">&times;</button>
+  </div>
+  <div class="sidebar-links">
+    <a class="sidebar-link" href="./index.html">
+      <span class="sidebar-link-icon">&#127968;</span> Home
+    </a>
+    <a class="sidebar-link" href="./about.html">
+      <span class="sidebar-link-icon">&#8505;&#65039;</span> About Us
+    </a>
+    <a class="sidebar-link" href="./contact.html">
+      <span class="sidebar-link-icon">&#9993;&#65039;</span> Contact Us
+    </a>
+    <button class="sidebar-link sidebar-link-toggle open" id="clerkServicesToggle" type="button" aria-expanded="true">
+      <span class="sidebar-link-icon">&#128196;</span> Clerk's Services
+      <span class="sidebar-link-caret">&#9662;</span>
+    </button>
+    <div class="sidebar-submenu open" id="clerkServicesMenu">
+      <a class="sidebar-sublink" href="./show-salary.html">Show Salary</a>
+      <a class="sidebar-sublink" href="./absentee-days.html">Absentee Days Calculator</a>
+      <a class="sidebar-sublink active" href="./rbe-212-19.html">212/19</a>
+    </div>
+  </div>
+  <div class="sidebar-footer">Sugamshree Workforce Management Pvt Ltd</div>
+</nav>
+
+<header class="topbar">
+  <button class="hamburger-btn" id="sidebarOpenBtn" type="button" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-app-mark">
+    <span class="mark-glyph">N</span>
+    <span class="mark-text">
+      <span class="t1">Register</span>
+      <span class="t2">NDA</span>
+    </span>
+  </div>
+</header>
+
+<main class="pfx">
+  <a class="back-link" href="./index.html">&larr; Back to app</a>
+  <header>
+    <h1>Pay Fixation on Promotion</h1>
+    <p>7th CPC pay matrix · Reference: RBE No. 212/2019 dtd 18/12/2019</p>
+  </header>
+
+  <form id="f" autocomplete="off" novalidate>
+    <noscript>Enable JavaScript to use this calculator.</noscript>
+
+    <div class="row">
+      <label for="lvl">Select 7th CPC level<span class="hint">Before promotion</span></label>
+      <select id="lvl"></select>
+    </div>
+
+    <div class="row">
+      <label for="pay">Select basic pay<span class="hint">Before promotion</span></label>
+      <select id="pay"></select>
+    </div>
+
+    <div class="row">
+      <label for="dop">Date of promotion<span class="hint">in dd/mm/yyyy format</span></label>
+      <input type="text" id="dop" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10">
+    </div>
+
+    <div class="row">
+      <label for="plvl">Select promoted level</label>
+      <select id="plvl"></select>
+    </div>
+
+    <div class="row">
+      <span class="lbl" id="dniLbl">Date of next increment</span>
+      <div class="radios" role="radiogroup" aria-labelledby="dniLbl">
+        <label><input type="radio" name="dni" value="1" checked> Jan</label>
+        <label><input type="radio" name="dni" value="7"> Jul</label>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="lbl" id="fixLbl">Fix pay from<span class="hint">FR 22(I)(a)(1) option</span></span>
+      <div class="radios" role="radiogroup" aria-labelledby="fixLbl" style="flex-direction:column;gap:6px">
+        <label><input type="radio" name="fix" value="promo" checked> Date of promotion</label>
+        <label><input type="radio" name="fix" value="dni" id="fixDni"> Date of next increment in lower level</label>
+      </div>
+    </div>
+
+    <p class="err" id="err" role="alert"></p>
+    <div class="actions">
+      <button type="submit" class="primary">Calculate</button>
+      <button type="reset" class="ghost" id="reset">Reset</button>
+      <span class="or">or</span>
+      <button type="button" class="primary" id="cmp">Compare</button>
+    </div>
+
+    <section id="out" aria-live="polite"></section>
+  </form>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const openBtn = document.getElementById('sidebarOpenBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+
+  function openSidebar(){
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+  }
+  function closeSidebar(){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  }
+
+  openBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidebar();
+  });
+  sidebar.querySelectorAll('.sidebar-link:not(.sidebar-link-toggle)').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+  sidebar.querySelectorAll('.sidebar-sublink').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
+
+  const clerkToggle = document.getElementById('clerkServicesToggle');
+  const clerkMenu = document.getElementById('clerkServicesMenu');
+  if (clerkToggle && clerkMenu) {
+    clerkToggle.addEventListener('click', () => {
+      const isOpen = clerkMenu.classList.toggle('open');
+      clerkToggle.classList.toggle('open', isOpen);
+      clerkToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  }
+})();
+</script>
+
+<script>
+(function(){
+  // ---- 7th CPC pay matrix (generated: first cell × 3 %, rounded to nearest ₹100, up to level maximum) ----
+  var LEVELS = [
+    ["1",18000,56900],["2",19900,63200],["3",21700,69100],["4",25500,81100],
+    ["5",29200,92300],["6",35400,112400],["7",44900,142400],["8",47600,151100],
+    ["9",53100,167800],["10",56100,177500],["11",67700,208700],["12",78800,209200],
+    ["13",123100,215900],["13A",131100,216600],["14",144200,218200],["15",182200,224100],
+    ["16",205400,224400],["17",225000,225000],["18",250000,250000]
+  ];
+  var MATRIX = {};
+  LEVELS.forEach(function(L){
+    var cells=[L[1]], p=L[1];
+    while(cells.length<60){
+      var n=Math.round(p*1.03/100)*100;
+      if(n>L[2]||n<=p) break;
+      cells.push(n); p=n;
+    }
+    MATRIX[L[0]]=cells;
+  });
+  var ORDER = LEVELS.map(function(L){return L[0]});
+
+  var $ = function(id){return document.getElementById(id)};
+  var lvl=$("lvl"), pay=$("pay"), dop=$("dop"), plvl=$("plvl"), err=$("err"), out=$("out");
+  var inr = function(n){return "₹ "+n.toLocaleString("en-IN")};
+  var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var fmt = function(d){return ("0"+d.getDate()).slice(-2)+" "+MON[d.getMonth()]+" "+d.getFullYear()};
+
+  function fillLevels(){
+    lvl.innerHTML='<option value="">--</option>'+ORDER.slice(0,-1).map(function(l){
+      return '<option value="'+l+'">Level '+l+'</option>';}).join("");
+  }
+  function fillPay(){
+    var c=MATRIX[lvl.value]||[];
+    pay.innerHTML='<option value="">--</option>'+c.map(function(v){
+      return '<option value="'+v+'">'+v.toLocaleString("en-IN")+'</option>';}).join("");
+  }
+  function fillPromoted(){
+    var i=ORDER.indexOf(lvl.value);
+    var opts=i<0?[]:ORDER.slice(i+1);
+    plvl.innerHTML='<option value="">--</option>'+opts.map(function(l){
+      return '<option value="'+l+'">Level '+l+'</option>';}).join("");
+  }
+  lvl.addEventListener("change",function(){fillPay();fillPromoted();clear()});
+  [pay,dop,plvl].forEach(function(e){e.addEventListener("input",clear)});
+  document.querySelectorAll("[name=dni]").forEach(function(r){r.addEventListener("change",clear)});
+
+  // auto-insert slashes while typing the date
+  dop.addEventListener("input",function(){
+    var v=dop.value.replace(/[^\d]/g,"").slice(0,8), s=v;
+    if(v.length>4) s=v.slice(0,2)+"/"+v.slice(2,4)+"/"+v.slice(4);
+    else if(v.length>2) s=v.slice(0,2)+"/"+v.slice(2);
+    dop.value=s;
+  });
+
+  function clear(){err.textContent="";out.style.display="none"}
+  $("reset").addEventListener("click",function(){
+    setTimeout(function(){fillLevels();fillPay();fillPromoted();clear();syncOption()},0);
+  });
+
+  function parseDate(s){
+    var m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s);
+    if(!m) return null;
+    var d=new Date(+m[3],+m[2]-1,+m[1]);
+    if(d.getFullYear()!=+m[3]||d.getMonth()!=+m[2]-1||d.getDate()!=+m[1]) return null;
+    return d;
+  }
+  // next 1st of the chosen increment month strictly after the date
+  function nextDni(d,month){
+    var y=d.getFullYear(), c=new Date(y,month-1,1);
+    if(c<=d) c=new Date(y+1,month-1,1);
+    return c;
+  }
+  function nextCell(cells,v){
+    var i=cells.indexOf(v);
+    return i>=0&&i<cells.length-1?cells[i+1]:v;
+  }
+
+  // Rule 10(2) RS(RP) Rules 2016: promoted 2 Jan-1 Jul -> next 1 Jan; 2 Jul-1 Jan -> next 1 Jul
+  function rule10(d){
+    var y=d.getFullYear();
+    if(d>=new Date(y,0,2)&&d<=new Date(y,6,1)) return new Date(y+1,0,1);
+    if(d.getMonth()===0) return new Date(y,6,1);
+    return new Date(y+1,6,1);
+  }
+  function onDniDate(){
+    var d=parseDate(dop.value.trim()); if(!d) return false;
+    return d.getDate()===1&&d.getMonth()+1===+document.querySelector("[name=dni]:checked").value;
+  }
+  // option under FR 22(I)(a)(1) is not available when promotion falls on the DNI itself
+  function syncOption(){
+    var fd=$("fixDni"), blocked=onDniDate();
+    fd.disabled=blocked;
+    if(blocked) document.querySelector("[name=fix][value=promo]").checked=true;
+  }
+  [dop,].forEach(function(e){e.addEventListener("input",syncOption)});
+  document.querySelectorAll("[name=dni]").forEach(function(r){r.addEventListener("change",syncOption)});
+
+  function readInputs(){
+    syncOption();
+    if(!lvl.value){err.textContent="Select the level before promotion.";return null}
+    if(!pay.value){err.textContent="Select the basic pay before promotion.";return null}
+    var d=parseDate(dop.value.trim());
+    if(!d){err.textContent="Enter a valid date of promotion as dd/mm/yyyy.";return null}
+    if(!plvl.value){err.textContent="Select the promoted level.";return null}
+    return {d:d,basic:+pay.value,oldCells:MATRIX[lvl.value],newCells:MATRIX[plvl.value],
+      dniMonth:+document.querySelector("[name=dni]:checked").value,onDni:onDniDate()};
+  }
+
+  // useOpt=true: fix on next increment date in lower level (FR 22(I)(a)(1))
+  function calc(I,useOpt){
+    var fixDate=useOpt?nextDni(I.d,I.dniMonth):I.d;
+    var annual=useOpt||I.onDni;
+    var p1=annual?nextCell(I.oldCells,I.basic):I.basic;
+    var p2=nextCell(I.oldCells,p1);
+    var fixed=I.newCells.find(function(v){return v>=p2});
+    if(fixed===undefined) fixed=I.newCells[I.newCells.length-1];
+    var i1=rule10(fixDate), i1p=nextCell(I.newCells,fixed);
+    var i2=new Date(i1.getFullYear()+1,i1.getMonth(),1), i2p=nextCell(I.newCells,i1p);
+    var i3=new Date(i2.getFullYear()+1,i2.getMonth(),1), i3p=nextCell(I.newCells,i2p);
+    // basic pay drawn from promotion date for 3 years (daily, 30-day month)
+    var end=new Date(I.d.getFullYear()+3,I.d.getMonth(),I.d.getDate()), total=0;
+    for(var t=new Date(I.d);t<end;t=new Date(t.getFullYear(),t.getMonth(),t.getDate()+1)){
+      var v = t<fixDate?I.basic : t<i1?fixed : t<i2?i1p : t<i3?i2p : i3p;
+      total+=v/30;
+    }
+    return {fixDate:fixDate,annual:annual,p1:p1,p2:p2,fixed:fixed,i1:i1,i1p:i1p,i2:i2,i2p:i2p,total:Math.round(total),endPay:i3<end?i3p:(i2<end?i2p:(i1<end?i1p:fixed))};
+  }
+
+  $("f").addEventListener("submit",function(e){
+    e.preventDefault(); clear();
+    var I=readInputs(); if(!I) return;
+    var useOpt=document.querySelector("[name=fix]:checked").value==="dni";
+    var r=calc(I,useOpt);
+
+    var rows=[["Basic pay before promotion (Level "+lvl.value+")",inr(I.basic)]];
+    if(r.annual) rows.push(["Pay after annual increment on "+fmt(r.fixDate)+" (Level "+lvl.value+")",inr(r.p1)]);
+    rows.push(["Pay after one increment on promotion",inr(r.p2)]);
+    rows.push(["Promoted level","Level "+plvl.value]);
+    rows.push([useOpt?"Pay fixed on (next increment date in lower level)":"Pay fixed on date of promotion",fmt(r.fixDate)]);
+
+    var html='<h2>Result</h2><table>'+rows.map(function(x){
+      return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td></tr>';}).join("")+
+      '<tr class="final"><td>Pay fixed in Level '+plvl.value+'</td><td>'+inr(r.fixed)+'</td></tr>'+
+      '<tr><td>1st increment in Level '+plvl.value+' on '+fmt(r.i1)+'</td><td>'+inr(r.i1p)+'</td></tr>'+
+      '<tr><td>Next increment on '+fmt(r.i2)+'</td><td>'+inr(r.i2p)+'</td></tr></table>'+
+      '<p class="note">'+(I.onDni?'Promotion falls on the date of increment, so pay is fixed with two increments (annual + promotion). ':'')+
+      'Per RBE 212/2019, the first increment in the promoted level needs 6 months\' qualifying service; the next follows after one year. '+
+      'The pay matrix here is generated at 3% per cell rounded to the nearest ₹100; verify against the official Annexure before issuing orders.</p>';
+    out.innerHTML=html; out.style.display="block";
+    out.scrollIntoView({behavior:"smooth",block:"nearest"});
+  });
+
+  $("cmp").addEventListener("click",function(){
+    clear();
+    var I=readInputs(); if(!I) return;
+    var A=calc(I,false);
+    var canB=!I.onDni;
+    var B=canB?calc(I,true):null;
+
+    function row(label,fa,fb,cls){
+      return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+'</td><td>'+fa+'</td><td>'+(canB?fb:'—')+'</td></tr>';
+    }
+    var html='<h2>Comparison</h2><table class="cmp"><thead><tr><th></th><th>A: From date of promotion</th><th>B: From next increment (FR 22(I)(a)(1))</th></tr></thead><tbody>'+
+      row("Pay fixed on",fmt(A.fixDate),B&&fmt(B.fixDate))+
+      row("Pay till fixation date","—",B&&inr(I.basic)+" (Lvl "+lvl.value+")")+
+      row("Pay fixed in Level "+plvl.value,inr(A.fixed),B&&inr(B.fixed),"final")+
+      row("1st increment",fmt(A.i1)+"<br>"+inr(A.i1p),B&&fmt(B.i1)+"<br>"+inr(B.i1p))+
+      row("Next increment",fmt(A.i2)+"<br>"+inr(A.i2p),B&&fmt(B.i2)+"<br>"+inr(B.i2p))+
+      row("Basic pay earned in 3 years*",inr(A.total),B&&inr(B.total))+
+      '</tbody></table>';
+
+    var rem;
+    if(!canB){
+      rem='<b>Remark:</b> Promotion falls on your date of increment, so the FR 22(I)(a)(1) option is not available. Only Option A applies: pay is fixed with two increments, giving <b>'+inr(A.fixed)+'</b> from '+fmt(A.fixDate)+'.';
+    } else {
+      var diff=A.total-B.total, best=diff>=0?"A":"B", bp=best==="A"?A:B, wp=best==="A"?B:A;
+      var amt=inr(Math.abs(diff));
+      if(diff===0) rem='<b>Remark:</b> Both options give the same basic pay over 3 years. Option A is simpler.';
+      else {
+        rem='<b>Remark: Option '+best+' is better</b> for these inputs — about '+amt+' more basic pay over 3 years ('+
+          (best==="A"?'pay in the promoted level starts earlier, on '+fmt(A.fixDate):'a higher pay is fixed in the promoted level from '+fmt(B.fixDate)+', which outweighs the wait')+').';
+        if(best==="A"&&B.fixed>A.fixed) rem+=' Option B fixes a higher pay ('+inr(B.fixed)+' vs '+inr(A.fixed)+') but only later, so it takes longer to catch up.';
+        if(best==="B"&&A.fixed<B.fixed) rem+=' Option A gives you the promoted level sooner but at a lower pay ('+inr(A.fixed)+').';
+      }
+      if(A.fixed===B.fixed&&diff>0) rem+=' The fixed pay is identical, so Option A simply starts earlier.';
+    }
+    html+='<div class="remark">'+rem+'</div>'+
+      '<p class="note">*Basic pay only (no DA/allowances), over 3 years from promotion, assuming pay stays at the lower level until fixation under Option B. Increment dates follow Rule 10 / RBE 212/2019. Verify against the official pay matrix and consult your Accounts office before opting.</p>';
+    out.innerHTML=html; out.style.display="block";
+    out.scrollIntoView({behavior:"smooth",block:"nearest"});
+  });
+
+  fillLevels(); fillPay(); fillPromoted();
+})();
+</script>
+</body>
+</html>
